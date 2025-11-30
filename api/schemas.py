@@ -39,6 +39,12 @@ class UpdateUserRequest(BaseModel):
                 detail="Name should contains only letters and digits"
             )
 
+####################
+# LOGIN
+####################
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
 
 
