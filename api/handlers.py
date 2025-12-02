@@ -1,4 +1,4 @@
-from schemas import UserAddDTO, UserShowDTO, DeleteUserResponse, UpdatedUserResponse, UpdateUserRequest
+from api.schemas import UserAddDTO, UserShowDTO, DeleteUserResponse, UpdatedUserResponse, UpdateUserRequest, EventAddDTO, EventShowDTO, DeleteEventResponse
 from db.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, APIRouter, HTTPException, status
@@ -7,12 +7,19 @@ from logging import getLogger
 from actions.user import _create_new_user, _delete_user, _get_user_by_email, _get_user_by_id, _update_user, check_user_permission
 from actions.auth import get_current_user_from_token
 from sqlalchemy.dialects.postgresql import UUID 
-from db.models import UsersOrm
+from db.models import UsersOrm, EventsOrm
 
+from actions.events import _create_new_event, _delete_event, _get_events, _get_event_by_id
 
 logger = getLogger(__name__)
 
 user_router = APIRouter()
+
+#######################
+# User
+#######################
+
+
 
 @user_router.post("/", response_model=UserShowDTO)
 async def create_user(
@@ -32,7 +39,7 @@ async def delete_user(
        current_user: UsersOrm = Depends(get_current_user_from_token)
 ) -> DeleteUserResponse:
        # check for deletion and existence
-       user_for_deletion = _get_user_by_id(user_id=user_id)
+       user_for_deletion = await _get_user_by_id(user_id=user_id, session=db)
        if user_for_deletion is None:
               raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
 
@@ -42,12 +49,12 @@ async def delete_user(
        ):
               raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
        
-       deleted_user_id = await _delete_user(user_id=user_id)
+       deleted_user_id = await _delete_user(user_id=user_id, session=db)
        if deleted_user_id is None:
-              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found ")
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User    with id {user_id} not found ")
        return DeleteUserResponse(deleted_user_id)
 
-@user_router.get("/", response_model=UUID)
+@user_router.get("/", response_model=UsersOrm)
 async def get_user_by_uuid(
        user_id: UUID,
        db: AsyncSession = Depends(get_db),
@@ -74,7 +81,7 @@ async def update_user(
                      detail="At least one parameter for user update info should be provided"
               )
        
-       user = _get_user_by_id(user_id=user_id)
+       user = await _get_user_by_id(user_id=user_id, session=db)
        if user is None:
               raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
        
@@ -119,7 +126,7 @@ async def grant_admin_privilege(
        except IntegrityError as err:
               logger.error(err)
               raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Database error: {err}")
-       return updated_user_id
+       return UpdatedUserResponse(updated_user_id=updated_user_id)
 
        
 
@@ -151,4 +158,56 @@ async def revoke_admin_privilege(
        except IntegrityError as err:
               logger.error(err)
               raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Database error: {err}")
-       return updated_user_id
+       return UpdatedUserResponse(updated_user_id=updated_user_id)
+
+
+####################
+# Events
+####################
+
+event_router = APIRouter()
+
+
+@event_router.post("/", response_model=EventShowDTO)
+async def create_events(
+        cred: EventAddDTO,
+        db: AsyncSession = Depends(get_db),
+        current_user: UsersOrm = Depends(get_current_user_from_token)
+) -> EventShowDTO:
+        
+       if not (current_user.is_admin or current_user.is_superadmin):
+              raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+       try:
+              return await _create_new_event(cred, db)
+       except IntegrityError as err:
+              logger.error(err)
+              raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f'Database erroe: {err}')
+        
+@event_router.delete("/", response_model=DeleteEventResponse)
+async def delete_event(
+       event_id: UUID,
+       db: AsyncSession = Depends(get_db),
+       current_user: UsersOrm = Depends(get_current_user_from_token)
+) -> DeleteEventResponse:
+       # check for deletion and existence
+       event_for_deletion = await _get_event_by_id(event_id=event_id, session=db)
+       if event_for_deletion is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id {event_id} not found")
+
+       if not (current_user.is_admin or current_user.is_superadmin):
+              raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+       
+       deleted_event_id = await _delete_event(event_id=event_id, session=db)
+       if deleted_event_id is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Event    with id {event_id} not found ")
+       return DeleteEventResponse(deleted_event_id)
+
+@event_router.get("/", response_model=list[EventsOrm])
+async def get_events(
+       db: AsyncSession = Depends(get_db)
+) -> list[EventsOrm]:
+       events = await _get_events(session=db)
+       if events is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Events not found")
+
+       return events

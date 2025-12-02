@@ -59,8 +59,8 @@ class EventsOrm(Base):
     title: Mapped[str_256] 
     text: Mapped[str]
     author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.user_id", ondelete="CASCADE"))
-    photo: Mapped[str]
-    likes: Mapped[int]
+    photo: Mapped[str | None]
+    likes: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[created_at]
     updated_at: Mapped[updated_at]
 

@@ -10,10 +10,11 @@ class UserAddDTO(BaseModel):
     hashed_password: str
 
     @field_validator("name")
-    def validate_first_name(cls, value: str):
-        if not value.isalnum():
+    def validate_name(cls, value: str):
+        value_without_space = ''.join([char for char in value if char != " "])
+        if not value_without_space.isalnum():
             raise ValueError(
-                detail="Name should contains only letters and digits"
+                "Name should contains only letters and digits"
             )
 
 
@@ -33,10 +34,11 @@ class UpdateUserRequest(BaseModel):
     email: EmailStr | None = None
     
     @field_validator("name")
-    def validate_first_name(cls, value: str):
-        if not value.isalnum():
+    def validate_name(cls, value: str):
+        value_without_space = ''.join([char for char in value if char is not " "])
+        if not value_without_space.isalnum():
             raise ValueError(
-                detail="Name should contains only letters and digits"
+                "Name should contains only letters and digits"
             )
 
 ####################
@@ -45,6 +47,27 @@ class UpdateUserRequest(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+###################
+# Events
+###################
+
+class EventAddDTO(BaseModel):
+     title: str
+     text: str
+     author_id: uuid.UUID 
+     photo: str | None = None
+
+class EventShowDTO(EventAddDTO):
+    event_id: uuid.UUID
+    likes: int 
+    created_at: datetime
+    updated_at: datetime
+
+class DeleteEventResponse(BaseModel):
+    deleted_event_id: uuid.UUID     
+
 
 
 
