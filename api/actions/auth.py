@@ -15,7 +15,7 @@ from db.models import UsersOrm
 
 
 config = AuthXConfig(
-    JWt_SECRET_KEY=settings.SECRET_KEY,
+    JWT_SECRET_KEY=settings.SECRET_KEY,
     JWT_ACCESS_COOKIE_NAME="my_access_token",
     JWT_TOKEN_LOCATION=["cookies"],
     JWT_ACCESS_TOKEN_EXPIRES=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)

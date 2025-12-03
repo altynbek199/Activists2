@@ -1,7 +1,7 @@
 from db.dals import EventsDAL
 from db.models import EventsOrm
 from sqlalchemy.dialects.postgresql import UUID
-from schemas import EventAddDTO, EventShowDTO
+from api.schemas import EventAddDTO, EventShowDTO
 from typing import Optional
 
 

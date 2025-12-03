@@ -1,10 +1,10 @@
-from schemas import UserShowDTO
+from api.schemas import UserShowDTO
 from db.dals import UserDAL
 from hashing import Hasher
 from db.models import PortalRole, UsersOrm
 from typing import Optional
 from sqlalchemy.dialects.postgresql import UUID
-
+import uuid
 
 async def _create_new_user(cred, session) -> UserShowDTO:
     async with session.begin():

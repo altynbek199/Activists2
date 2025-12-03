@@ -10,7 +10,7 @@ def create_fastapi_app():
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origin=["*"]
+        allow_origins=["*"]
     )
 
     main_api_router = APIRouter()

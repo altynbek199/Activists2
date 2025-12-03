@@ -4,12 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from logging import getLogger
-from actions.user import _create_new_user, _delete_user, _get_user_by_email, _get_user_by_id, _update_user, check_user_permission
-from actions.auth import get_current_user_from_token
+from api.actions.user import _create_new_user, _delete_user, _get_user_by_email, _get_user_by_id, _update_user, check_user_permission
+from api.actions.auth import get_current_user_from_token
 from sqlalchemy.dialects.postgresql import UUID 
 from db.models import UsersOrm, EventsOrm
-
-from actions.events import _create_new_event, _delete_event, _get_events, _get_event_by_id
+import uuid
+from api.actions.events import _create_new_event, _delete_event, _get_events, _get_event_by_id
 
 logger = getLogger(__name__)
 
@@ -34,7 +34,7 @@ async def create_user(
         
 @user_router.delete("/", response_model=DeleteUserResponse)
 async def delete_user(
-       user_id: UUID,
+       user_id: uuid.UUID,
        db: AsyncSession = Depends(get_db),
        current_user: UsersOrm = Depends(get_current_user_from_token)
 ) -> DeleteUserResponse:
@@ -52,14 +52,14 @@ async def delete_user(
        deleted_user_id = await _delete_user(user_id=user_id, session=db)
        if deleted_user_id is None:
               raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User    with id {user_id} not found ")
-       return DeleteUserResponse(deleted_user_id)
+       return DeleteUserResponse(deleted_user_id=deleted_user_id)
 
-@user_router.get("/", response_model=UsersOrm)
+@user_router.get("/", response_model=UserShowDTO)
 async def get_user_by_uuid(
-       user_id: UUID,
+       user_id: uuid.UUID,
        db: AsyncSession = Depends(get_db),
        current_user: UsersOrm = Depends(get_current_user_from_token)
-) -> UsersOrm:
+) -> UserShowDTO:
        user = await _get_user_by_id(user_id=user_id, session=db)
        if user is None:
               raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
@@ -67,7 +67,7 @@ async def get_user_by_uuid(
 
 @user_router.patch("/", response_model=UpdatedUserResponse)
 async def update_user(
-       user_id: UUID,
+       user_id: uuid.UUID,
        body: UpdateUserRequest,
        db: AsyncSession = Depends(get_db),
        current_user: UsersOrm = Depends(get_current_user_from_token)
@@ -100,7 +100,7 @@ async def update_user(
 
 @user_router.patch("/admin_privilege_grant", response_model=UpdatedUserResponse)
 async def grant_admin_privilege(
-       user_id: UUID,
+       user_id: uuid.UUID,
        db: AsyncSession = Depends(get_db),
        current_user: UsersOrm = Depends(get_current_user_from_token)
 ) -> UpdatedUserResponse:
@@ -132,7 +132,7 @@ async def grant_admin_privilege(
 
 @user_router.patch("/admin_privilege_revoke", response_model=UpdatedUserResponse)
 async def revoke_admin_privilege(
-       user_id: UUID,
+       user_id: uuid.UUID,
        db: AsyncSession = Depends(get_db),
        current_user: UsersOrm = Depends(get_current_user_from_token)
 ) -> UpdatedUserResponse:
@@ -185,7 +185,7 @@ async def create_events(
         
 @event_router.delete("/", response_model=DeleteEventResponse)
 async def delete_event(
-       event_id: UUID,
+       event_id: uuid.UUID,
        db: AsyncSession = Depends(get_db),
        current_user: UsersOrm = Depends(get_current_user_from_token)
 ) -> DeleteEventResponse:
@@ -200,12 +200,12 @@ async def delete_event(
        deleted_event_id = await _delete_event(event_id=event_id, session=db)
        if deleted_event_id is None:
               raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Event    with id {event_id} not found ")
-       return DeleteEventResponse(deleted_event_id)
+       return DeleteEventResponse(deleted_event_id=deleted_event_id)
 
-@event_router.get("/", response_model=list[EventsOrm])
+@event_router.get("/", response_model=list[EventShowDTO])
 async def get_events(
        db: AsyncSession = Depends(get_db)
-) -> list[EventsOrm]:
+) -> list[EventShowDTO]:
        events = await _get_events(session=db)
        if events is None:
               raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Events not found")
