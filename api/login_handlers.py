@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Response, Depends, HTTPException, status
-from schemas import Token
+from api.schemas import Token
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.database import get_db
