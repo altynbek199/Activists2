@@ -4,7 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from logging import getLogger
-from api.actions.user import _create_new_user, _delete_user, _get_user_by_email, _get_user_by_id, _update_user, check_user_permission
+from api.actions.user import (_create_new_user, _delete_user, _get_user_by_email,
+_get_user_by_id, _update_user, check_user_permission, _get_users) 
 from api.actions.auth import get_current_user_from_token
 from sqlalchemy.dialects.postgresql import UUID 
 from db.models import UsersOrm, EventsOrm
@@ -81,22 +82,34 @@ async def update_user(
                      detail="At least one parameter for user update info should be provided"
               )
        
-       user = await _get_user_by_id(user_id=user_id, session=db)
-       if user is None:
+       user_for_update = await _get_user_by_id(user_id=user_id, session=db)
+       if user_for_update is None:
               raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
        
-       if not check_user_permission(
-              target_user=user_id,
+       if not await check_user_permission(
+              target_user=user_for_update,
               current_user=current_user
        ):
               raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
        try:
-              updated_user_id = _update_user(user_id=user_id, updated_user_params=update_user_params, session=db)
+              updated_user_id = await _update_user(user_id=user_id, updated_user_params=update_user_params, session=db)
        except IntegrityError as err:
               logger.error(err)
               raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Database error: {err}")
        return UpdatedUserResponse(updated_user_id=updated_user_id)
 
+
+@user_router.get("/users", response_model=list[UserShowDTO])
+async def get_users(
+       db: AsyncSession = Depends(get_db),
+       current_user: UsersOrm = Depends(get_current_user_from_token)
+) -> list[UserShowDTO]:
+       if not(current_user.is_admin, current_user.is_superadmin):
+              raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+       users = await _get_users(session=db)
+       if users is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Users not found")
+       return users
 
 @user_router.patch("/admin_privilege_grant", response_model=UpdatedUserResponse)
 async def grant_admin_privilege(
@@ -177,6 +190,12 @@ async def create_events(
         
        if not (current_user.is_admin or current_user.is_superadmin):
               raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+       author = await _get_user_by_id(user_id=cred.author_id, session=db)
+       if author is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {cred.author_id} not found" )
+       if not (author.is_admin or author.is_superadmin):
+              raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Author must be admin/superadmin")
+
        try:
               return await _create_new_event(cred, db)
        except IntegrityError as err:
@@ -190,12 +209,15 @@ async def delete_event(
        current_user: UsersOrm = Depends(get_current_user_from_token)
 ) -> DeleteEventResponse:
        # check for deletion and existence
+
+       if not (current_user.is_admin or current_user.is_superadmin):
+              raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+       
        event_for_deletion = await _get_event_by_id(event_id=event_id, session=db)
        if event_for_deletion is None:
               raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id {event_id} not found")
 
-       if not (current_user.is_admin or current_user.is_superadmin):
-              raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+       
        
        deleted_event_id = await _delete_event(event_id=event_id, session=db)
        if deleted_event_id is None:

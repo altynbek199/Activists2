@@ -25,18 +25,18 @@ async def _create_new_event(cred, session) -> EventShowDTO:
 async def _delete_event(event_id, session) -> Optional[UUID]:
     async with session.begin():
         event_dal = EventsDAL(session)
-
-        deleted_user_id = await event_dal.delete_event(event_id=event_id)
-
-        return deleted_user_id
+        deleted_event_id = await event_dal.delete_event(event_id=event_id)
+    return deleted_event_id
 
 
 
 async def _get_events(session) -> list[EventsOrm]:
-    events_dal = EventsDAL(session)
-    return await events_dal.get_events()
+    async with session.begin():
+        events_dal = EventsDAL(session)
+        return await events_dal.get_events()
 
 async def _get_event_by_id(event_id, session) -> EventsOrm:
-    event_dal = EventsDAL(session)
-    return await event_dal.get_event_by_id(event_id=event_id)
+    async with session.begin():
+        event_dal = EventsDAL(session)
+        return await event_dal.get_event_by_id(event_id=event_id)
 
