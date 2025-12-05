@@ -687,7 +687,7 @@
         async function loadEvents() {
             try {
                 document.getElementById('loadingEvents').style.display = 'block';
-                const response = await fetch(`${API_BASE}/event/`);
+                const response = await fetch(`${API_BASE}/event/get`);
                 
                 if (!response.ok) {
                     throw new Error('Ошибка загрузки событий');
@@ -779,7 +779,7 @@
             const photo = document.getElementById('eventPhoto').value || null;
             
             try {
-                const response = await fetch(`${API_BASE}/event/`, {
+                const response = await fetch(`${API_BASE}/event/add`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -818,7 +818,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/event/?event_id=${eventId}`, {
+                const response = await fetch(`${API_BASE}/event/delete?event_id=${eventId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${accessToken}`
