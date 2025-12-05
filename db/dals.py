@@ -68,6 +68,16 @@ class UserDAL:
         res = await self.db_session.execute(query)
         user_orm = res.scalars().one_or_none()
         return user_orm
+    
+    async def get_users(self) -> list[UsersOrm]:
+        query = (
+            select(UsersOrm)
+        )
+
+        res = await self.db_session.execute(query)
+        users_orm = res.scalars().all()
+        return users_orm
+
 
 #########
 # Event

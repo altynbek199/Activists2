@@ -35,8 +35,8 @@ async def _update_user(user_id, updated_user_params: dict, session) -> Optional[
     async with session.begin():
         user_dal = UserDAL(session)
 
-        updated_user_id = await user_dal.update_user(user_id=user_id, **updated_user_id)
-        return 
+        updated_user_id = await user_dal.update_user(user_id=user_id, **updated_user_params)
+        return updated_user_id
     
     
 async def _get_user_by_id(user_id, session) -> UsersOrm:
@@ -71,6 +71,12 @@ async def check_user_permission(target_user: UsersOrm, current_user: UsersOrm ) 
             and PortalRole.ROLE_PORTAL_ADMIN in target_user.roles):
             return False
     return True
+
+
+async def _get_users(session) -> list[UsersOrm]:
+    async with session.begin():
+        users_dal = UserDAL(session)
+        return await users_dal.get_users()
 
 
 

@@ -34,7 +34,10 @@ async def _get_user_by_id_for_auth(user_id: UUID, session: AsyncSession) -> User
         return await user_dal.get_user_by_id(user_id=user_id)
 
 async def authenticate_user(email: str, password: str, session: AsyncSession) -> Optional[UserShowDTO]:
-    user = await _get_user_by_email_for_auth(email=email)
+    user = await _get_user_by_email_for_auth(email=email, session=session)
+    if user is None:
+         return None
+         
     if not Hasher.verify_password(plain_password=password, hashed_password=user.hashed_password):
         return None
     return user       
@@ -60,7 +63,7 @@ async def get_current_user_from_token(
                   raise cred_exception
         except JWTError:
              raise cred_exception
-        user = await _get_user_by_id_for_auth(user_id)
+        user = await _get_user_by_id_for_auth(user_id, session=db)
         if user is None:
              raise cred_exception
         return user      

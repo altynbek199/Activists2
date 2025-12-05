@@ -3,20 +3,23 @@ import uuid
 from datetime import datetime
 from db.models import PortalRole
 from typing import Annotated
+import re
+
+
+NAME_REGEX = re.compile(r"^[а-яА-ЯёЁәәғғққңңөөұұүүһһііІІa-zA-Z0-9]+$", re.IGNORECASE)
 
 class UserAddDTO(BaseModel):
-    name: str
-    email: str
+    name: Annotated[str, Field(..., min_length=5)]
+    email: EmailStr
     hashed_password: str
 
     @field_validator("name")
     def validate_name(cls, value: str):
-        value_without_space = ''.join([char for char in value if char != " "])
-        if not value_without_space.isalnum():
+        if not NAME_REGEX.fullmatch(value.strip()):
             raise ValueError(
-                "Name should contains only letters and digits"
+                "Name should contains only rus, eng, kaz letters and digits"
             )
-
+        return value
 
 class UserShowDTO(UserAddDTO):
     user_id: uuid.UUID   
@@ -35,11 +38,12 @@ class UpdateUserRequest(BaseModel):
     
     @field_validator("name")
     def validate_name(cls, value: str):
-        value_without_space = ''.join([char for char in value if char is not " "])
-        if not value_without_space.isalnum():
+        if not NAME_REGEX.fullmatch(value.strip()):
             raise ValueError(
-                "Name should contains only letters and digits"
+                "Name should contains only rus, eng, kaz letters and digits"
             )
+        return value
+
 
 ####################
 # LOGIN
