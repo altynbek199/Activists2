@@ -181,7 +181,7 @@ async def revoke_admin_privilege(
 event_router = APIRouter()
 
 
-@event_router.post("/", response_model=EventShowDTO)
+@event_router.post("/add", response_model=EventShowDTO)
 async def create_events(
         cred: EventAddDTO,
         db: AsyncSession = Depends(get_db),
@@ -202,7 +202,7 @@ async def create_events(
               logger.error(err)
               raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f'Database erroe: {err}')
         
-@event_router.delete("/", response_model=DeleteEventResponse)
+@event_router.delete("/delete", response_model=DeleteEventResponse)
 async def delete_event(
        event_id: uuid.UUID,
        db: AsyncSession = Depends(get_db),
@@ -224,7 +224,7 @@ async def delete_event(
               raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Event    with id {event_id} not found ")
        return DeleteEventResponse(deleted_event_id=deleted_event_id)
 
-@event_router.get("/", response_model=list[EventShowDTO])
+@event_router.get("/get", response_model=list[EventShowDTO])
 async def get_events(
        db: AsyncSession = Depends(get_db)
 ) -> list[EventShowDTO]:
