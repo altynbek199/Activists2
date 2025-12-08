@@ -507,6 +507,9 @@
         const API_BASE = 'http://localhost:8000'; // Замените на ваш URL API
         let currentUser = null;
         let accessToken = null;
+        let currentPage = 1;
+        let isLoading = false;
+        let hasMoreEvents = true;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -517,6 +520,9 @@
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('registerForm').addEventListener('submit', handleRegister);
             document.getElementById('createEventForm').addEventListener('submit', handleCreateEvent);
+
+            // Setup infinite scroll
+            window.addEventListener('scroll', handleScroll);
         });
 
         // Auth Functions
@@ -684,10 +690,20 @@
         }
 
         // Events Functions
-        async function loadEvents() {
+        async function loadEvents(resetPage = false) {
+            if (isLoading || (!hasMoreEvents && !resetPage)) return;
+            
+            if (resetPage) {
+                currentPage = 1;
+                hasMoreEvents = true;
+                document.getElementById('eventsList').innerHTML = '';
+            }
+            
             try {
+                isLoading = true;
                 document.getElementById('loadingEvents').style.display = 'block';
-                const response = await fetch(`${API_BASE}/event/get`);
+                
+                const response = await fetch(`${API_BASE}/event/get?page=${currentPage}`);
                 
                 if (!response.ok) {
                     throw new Error('Ошибка загрузки событий');
@@ -695,25 +711,45 @@
 
                 const events = await response.json();
                 document.getElementById('loadingEvents').style.display = 'none';
-                displayEvents(events);
+                
+                if (events.length === 0) {
+                    hasMoreEvents = false;
+                    if (currentPage === 1) {
+                        document.getElementById('eventsList').innerHTML = '<div class="empty-state"><h3>Пока нет событий</h3><p>Будьте первым, кто создаст событие!</p></div>';
+                    }
+                } else {
+                    appendEvents(events);
+                    currentPage++;
+                }
+                
+                isLoading = false;
             } catch (error) {
                 document.getElementById('loadingEvents').textContent = 'Ошибка загрузки событий';
                 console.error(error);
+                isLoading = false;
             }
         }
 
-        function displayEvents(events) {
-            const list = document.getElementById('eventsList');
+        function handleScroll() {
+            if (isLoading || !hasMoreEvents) return;
             
-            if (events.length === 0) {
-                list.innerHTML = '<div class="empty-state"><h3>Пока нет событий</h3><p>Будьте первым, кто создаст событие!</p></div>';
-                return;
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            
+            // Загружаем новые события когда до конца страницы осталось 300px
+            if (scrollTop + windowHeight >= documentHeight - 300) {
+                loadEvents();
             }
+        }
+
+        function appendEvents(events) {
+            const list = document.getElementById('eventsList');
             
             // Сортировка по дате (новые сверху)
             events.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             
-            list.innerHTML = events.map(event => {
+            const eventsHTML = events.map(event => {
                 const isAdmin = currentUser && (
                     currentUser.roles.includes('ROLE_PORTAL_ADMIN') || 
                     currentUser.roles.includes('ROLE_PORTAL_SUPERADMIN')
@@ -751,6 +787,8 @@
                     </div>
                 `;
             }).join('');
+            
+            list.insertAdjacentHTML('beforeend', eventsHTML);
         }
 
         function toggleText(eventId) {
@@ -804,7 +842,7 @@
                 
                 setTimeout(() => {
                     closeCreateEventModal();
-                    loadEvents();
+                    loadEvents(true); // Reload events from page 1
                 }, 1500);
             } catch (error) {
                 document.getElementById('createEventError').textContent = error.message;
@@ -829,7 +867,7 @@
                     throw new Error('Ошибка удаления события');
                 }
 
-                loadEvents();
+                loadEvents(true); // Reload events from page 1
             } catch (error) {
                 alert('Ошибка удаления события: ' + error.message);
             }
