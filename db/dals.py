@@ -112,9 +112,12 @@ class EventsDAL:
     
 
 
-    async def get_events(self) -> list[EventsOrm]:
+    async def get_events_limit_10(self, offset) -> list[EventsOrm]:
         query = (
             select(EventsOrm)
+            .order_by(EventsOrm.created_at.desc())
+            .offset(offset)
+            .limit(10)
         )
         res = await self.db_session.execute(query)
         events_orm = res.scalars().all()

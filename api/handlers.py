@@ -10,7 +10,7 @@ from api.actions.auth import get_current_user_from_token
 from sqlalchemy.dialects.postgresql import UUID 
 from db.models import UsersOrm, EventsOrm
 import uuid
-from api.actions.events import _create_new_event, _delete_event, _get_events, _get_event_by_id
+from api.actions.events import _create_new_event, _delete_event, _get_events_limit_10_by_page, _get_event_by_id
 
 logger = getLogger(__name__)
 
@@ -225,10 +225,11 @@ async def delete_event(
        return DeleteEventResponse(deleted_event_id=deleted_event_id)
 
 @event_router.get("/get", response_model=list[EventShowDTO])
-async def get_events(
+async def get_events_limit_10_by_page(
+       page: int,
        db: AsyncSession = Depends(get_db)
 ) -> list[EventShowDTO]:
-       events = await _get_events(session=db)
+       events = await _get_events_limit_10_by_page(page=page, session=db)
        if events is None:
               raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Events not found")
 

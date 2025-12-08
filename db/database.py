@@ -4,7 +4,7 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import String
 from typing import Annotated
 
-engine = create_async_engine(settings.DATABASE_ASYNC_URL, echo=True)
+engine = create_async_engine(settings.DATABASE_ASYNC_URL)
 
 async_session_factory = async_sessionmaker(bind=engine, expire_on_commit=False)
 
