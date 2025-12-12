@@ -4,7 +4,7 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.database import get_db
 from api.actions.auth import authenticate_user, config, security, get_current_user_from_token
-from db.models import UsersOrm
+from db.models.models import UsersOrm
 
 
 login_router = APIRouter()

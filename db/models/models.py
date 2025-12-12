@@ -4,7 +4,7 @@ import uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID 
 from sqlalchemy import String, ARRAY, func, ForeignKey
-from enum import Enum, StrEnum
+from enum import  StrEnum
 from datetime import datetime, timezone
 
 def _utc_now():

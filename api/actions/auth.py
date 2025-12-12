@@ -11,7 +11,7 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 from db.database import get_db
 from jose import JWTError
-from db.models import UsersOrm
+from db.models.models import UsersOrm
 
 
 config = AuthXConfig(

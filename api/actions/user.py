@@ -1,7 +1,7 @@
 from api.schemas import UserShowDTO
 from db.dals import UserDAL
 from hashing import Hasher
-from db.models import PortalRole, UsersOrm
+from db.models.models import PortalRole, UsersOrm
 from typing import Optional
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
