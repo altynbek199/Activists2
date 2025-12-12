@@ -8,7 +8,7 @@ from api.actions.user import (_create_new_user, _delete_user, _get_user_by_email
 _get_user_by_id, _update_user, check_user_permission, _get_users) 
 from api.actions.auth import get_current_user_from_token
 from sqlalchemy.dialects.postgresql import UUID 
-from db.models import UsersOrm, EventsOrm
+from db.models.models import UsersOrm, EventsOrm
 import uuid
 from api.actions.events import _create_new_event, _delete_event, _get_events_limit_10_by_page, _get_event_by_id
 

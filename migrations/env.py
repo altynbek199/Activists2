@@ -5,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from db.models import UsersOrm, EventsOrm
+from db.models.models import UsersOrm, EventsOrm
 from db.database import Base
 from settings import settings
 

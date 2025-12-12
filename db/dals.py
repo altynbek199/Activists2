@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from db.models import UsersOrm, PortalRole, EventsOrm
+from db.models.models import UsersOrm, PortalRole, EventsOrm
 from sqlalchemy.dialects.postgresql import UUID
 from typing import Optional
 from sqlalchemy import select, update, delete

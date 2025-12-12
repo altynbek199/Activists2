@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, field_validator, Field
 import uuid
 from datetime import datetime
-from db.models import PortalRole
+from db.models.models import PortalRole
 from typing import Annotated
 import re
 
