@@ -10,8 +10,10 @@ import redis.asyncio as redis_async
 import asyncio
 import json
 from pydantic import TypeAdapter
+from settings import settings
 
-redis_client = redis_async.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+
+redis_client = redis_async.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT,password=settings.REDIS_PASS , decode_responses=True)
 
 async def redis_available():
     try:

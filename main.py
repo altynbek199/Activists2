@@ -9,15 +9,17 @@ from contextlib import asynccontextmanager
 from pymongo import AsyncMongoClient
 from beanie import init_beanie
 from socketio import ASGIApp
+from settings import settings
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     client = None
     print("Initialization MongoDB...")
-
     try:
-        client = AsyncMongoClient(host="localhost", port=27017)
-        await init_beanie(database=client["chat-db"], document_models=[Message])
+
+        client = AsyncMongoClient(f"mongodb://{settings.MONGO_ROOT_USER}:{settings.MONGO_ROOT_PASS}@mongodb:27017/{settings.MONGO_DB}?authSource=admin")
+        await init_beanie(database=client[settings.MONGO_DB], document_models=[Message])
         yield
     finally:
         print("Close MongoDB...")
@@ -55,5 +57,6 @@ asgi_app = ASGIApp(sio, other_asgi_app=app_fastapi)
 if __name__ == '__main__':
     uvicorn.run(
         app="main:asgi_app",
-        reload=True
-    )
+        host="0.0.0.0",
+        port=8080,
+        )

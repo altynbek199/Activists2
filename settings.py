@@ -9,6 +9,16 @@ class Settings(BaseSettings):
     DB_PORT: str
     DB_DB: str
 
+    MONGO_ROOT_USER: str
+    MONGO_ROOT_PASS: str
+    MONGO_APP_USER: str
+    MONGO_APP_PASS: str
+    MONGO_DB: str
+
+    REDIS_HOST: str
+    REDIS_PORT: str
+    REDIS_PASS: str
+    
     SECRET_KEY: str
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
