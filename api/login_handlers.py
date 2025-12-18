@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.database import get_db
 from api.actions.auth import authenticate_user, config, security, get_current_user_from_token
 from db.models.models import UsersOrm
+from authx.exceptions import JWTDecodeError
 
 
 login_router = APIRouter()
@@ -21,7 +22,10 @@ async def login(response: Response, form_data: OAuth2PasswordRequestForm = Depen
 
 @login_router.get("/test_auth")
 async def test(current_user: UsersOrm = Depends(get_current_user_from_token)):
-    return {"success": True, "current_user": current_user}
+    try:
+        return {"success": True, "current_user": current_user}
+    except JWTDecodeError as err:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired or invalid")     
 
 
 

@@ -3,27 +3,38 @@ import asyncpg
 
 
 class Settings(BaseSettings):
+    # postgres
     DB_USER: str
     DB_PASS: str
     DB_HOST: str
     DB_PORT: str
     DB_DB: str
 
+    # mongodb
     MONGO_ROOT_USER: str
     MONGO_ROOT_PASS: str
     MONGO_APP_USER: str
     MONGO_APP_PASS: str
     MONGO_DB: str
 
+    # redis
     REDIS_HOST: str
     REDIS_PORT: str
     REDIS_PASS: str
     
+    # jwt 
     SECRET_KEY: str
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
 
     APP_PORT: int
+
+    # s3 service
+    ACCESS_KEY: str
+    SECRET_KEY: str
+    ENDPOINT_URL: str
+    BUCKET_NAME: str
+    STATIC_DOMAIN: str
 
     @property
     def DATABASE_ASYNC_URL(self):

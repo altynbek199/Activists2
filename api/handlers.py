@@ -1,7 +1,9 @@
-from api.schemas import UserAddDTO, UserShowDTO, DeleteUserResponse, UpdatedUserResponse, UpdateUserRequest, EventAddDTO, EventShowDTO, DeleteEventResponse
+from api.schemas import (UserAddDTO, UserShowDTO, DeleteUserResponse, 
+                         UpdatedUserResponse, UpdateUserRequest, EventAddDTO, 
+                         EventShowDTO, DeleteEventResponse)
 from db.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends, APIRouter, HTTPException, status
+from fastapi import Depends, APIRouter, File, HTTPException, status, UploadFile
 from sqlalchemy.exc import IntegrityError
 from logging import getLogger
 from api.actions.user import (_create_new_user, _delete_user, _get_user_by_email,
@@ -183,7 +185,8 @@ event_router = APIRouter()
 
 @event_router.post("/add", response_model=EventShowDTO)
 async def create_events(
-        cred: EventAddDTO,
+        cred: EventAddDTO = Depends(EventAddDTO.as_form),
+        uploaded_file: UploadFile | None = File(None),
         db: AsyncSession = Depends(get_db),
         current_user: UsersOrm = Depends(get_current_user_from_token)
 ) -> EventShowDTO:
@@ -197,7 +200,7 @@ async def create_events(
               raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Author must be admin/superadmin")
 
        try:
-              return await _create_new_event(cred, db)
+              return await _create_new_event(cred, uploaded_file, db)
        except IntegrityError as err:
               logger.error(err)
               raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f'Database erroe: {err}')

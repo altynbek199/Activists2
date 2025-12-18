@@ -4,6 +4,7 @@ from datetime import datetime
 from db.models.models import PortalRole
 from typing import Annotated
 import re
+from fastapi import UploadFile, Form
 
 
 NAME_REGEX = re.compile(r"^[а-яА-ЯёЁәәғғққңңөөұұүүһһііІІa-zA-Z0-9]+$", re.IGNORECASE)
@@ -61,10 +62,23 @@ class EventAddDTO(BaseModel):
      title: str
      text: str
      author_id: uuid.UUID 
-     photo: str | None = None
+    
+     @classmethod
+     def as_form(
+         cls,
+         title: str = Form(...),
+         text: str = Form(...),
+         author_id: uuid.UUID = Form(...)
+     ):
+         return cls(
+             title=title,
+             text=text,
+             author_id=author_id,        
+            )
 
 class EventShowDTO(EventAddDTO):
     event_id: uuid.UUID
+    photo: str | None
     likes: int 
     created_at: datetime
     updated_at: datetime

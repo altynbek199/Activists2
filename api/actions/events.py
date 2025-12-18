@@ -9,9 +9,10 @@ from sqlalchemy.inspection import inspect
 import redis.asyncio as redis_async
 import asyncio
 import json
+from fastapi import UploadFile
 from pydantic import TypeAdapter
 from settings import settings
-
+from services.s3_service import s3_client
 
 redis_client = redis_async.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT,password=settings.REDIS_PASS , decode_responses=True)
 
@@ -32,15 +33,20 @@ def orm_to_dict(obj: EventsOrm):
     return dict1
 
 
-async def _create_new_event(cred, session) -> EventShowDTO:
+async def _create_new_event(cred: EventAddDTO, uploaded_file: UploadFile | None, session) -> EventShowDTO:
     async with session.begin():
+        s3_url_photo = None
+        if uploaded_file is not None:
+            s3_url_photo = await s3_client.upload_file(
+                    filename=uploaded_file.filename,
+                    file=uploaded_file,
+                )
         event_dal = EventsDAL(session)
-
         created_event_orm = await event_dal.create_event(
             title=cred.title,
             text=cred.text,
             author_id=cred.author_id,
-            photo=cred.photo
+            photo=s3_url_photo,
         )
 
     event_show_dto = EventShowDTO.model_validate(created_event_orm, from_attributes=True)
@@ -56,6 +62,10 @@ async def _delete_event(event_id, session) -> Optional[UUID]:
     async with session.begin():
         event_dal = EventsDAL(session)
         deleted_event_id = await event_dal.delete_event(event_id=event_id)
+    if await redis_available():
+        keys = await redis_client.keys("events:page:*")
+        if keys:
+            await redis_client.delete(*keys)
     return deleted_event_id
 
 hit = 0
