@@ -46,8 +46,23 @@ services:
       - "6379:6379"
     networks:
       - custom   
-
-
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq       
+    networks:
+      - custom     
   backend:
     image: activists_backend_image
     build:
@@ -68,7 +83,19 @@ services:
     ports:
       - "8000:8080"
     networks:
-      - custom  
+      - custom
+  worker:
+    build: .
+    command: celery -A services.celery_app worker --loglevel=INFO
+    environment:
+      CELERY_BROKER_URL: amqp://guest:guest@rabbitmq:5672//
+      CELERY_RESULT_BACKEND: rpc://
+    depends_on:
+      rabbitmq:
+        condition: service_healthy 
+    networks:
+      - custom         
+
   frontend:
     image: activists_frontend_image
     build:
@@ -90,4 +117,5 @@ volumes:
   db-data:
   mongo-data:
   redis-data:
+  rabbitmq-data:
 

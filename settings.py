@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     BUCKET_NAME: str
     STATIC_DOMAIN: str
 
+    # Celery 
+    CELERY_BROKER_URL: str
+    CELERY_RESULT_BACKEND: str
+
+    
     @property
     def DATABASE_ASYNC_URL(self):
         return f'postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_DB}'

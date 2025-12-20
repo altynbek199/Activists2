@@ -13,6 +13,11 @@ from fastapi import UploadFile
 from pydantic import TypeAdapter
 from settings import settings
 from services.s3_service import s3_client
+from services.resize_images import optimize_image_task
+import logging
+
+log = logging.getLogger(__name__)
+
 
 redis_client = redis_async.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT,password=settings.REDIS_PASS , decode_responses=True)
 
@@ -37,10 +42,12 @@ async def _create_new_event(cred: EventAddDTO, uploaded_file: UploadFile | None,
     async with session.begin():
         s3_url_photo = None
         if uploaded_file is not None:
+
+            # 'https://{self.static_domain}/{unique_filename}'
             s3_url_photo = await s3_client.upload_file(
                     filename=uploaded_file.filename,
-                    file=uploaded_file,
-                )
+                    file=uploaded_file.file, # BinaryIO
+                )   
         event_dal = EventsDAL(session)
         created_event_orm = await event_dal.create_event(
             title=cred.title,
@@ -50,6 +57,10 @@ async def _create_new_event(cred: EventAddDTO, uploaded_file: UploadFile | None,
         )
 
     event_show_dto = EventShowDTO.model_validate(created_event_orm, from_attributes=True)
+
+    task = optimize_image_task.delay(event_id=event_show_dto.event_id, s3_key=s3_url_photo) 
+    print(f'Task name: {task}')
+
     if await redis_available():
         keys = await redis_client.keys("events:page:*")
         if keys:
@@ -59,7 +70,12 @@ async def _create_new_event(cred: EventAddDTO, uploaded_file: UploadFile | None,
 
 
 async def _delete_event(event_id, session) -> Optional[UUID]:
+    event = await _get_event_by_id(event_id=event_id, session=session)
+    filename = event.photo.split('/')[-1]
+
     async with session.begin():
+        await s3_client.delete_file(s3_key=filename)
+        
         event_dal = EventsDAL(session)
         deleted_event_id = await event_dal.delete_event(event_id=event_id)
     if await redis_available():
@@ -115,5 +131,5 @@ async def cache_page_data(key: str, events_orm: list[EventsOrm]):
 async def _get_event_by_id(event_id, session) -> EventsOrm:
     async with session.begin():
         event_dal = EventsDAL(session)
-        return await event_dal.get_event_by_id(event_id=event_id)
+        return await event_dal.get_event_by_id(event_id=event_id)   
 

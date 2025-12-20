@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import String, ARRAY, func, ForeignKey
 from enum import  StrEnum
 from datetime import datetime, timezone
+from sqlalchemy import DateTime 
 
 def _utc_now():
     return datetime.now(timezone.utc)
@@ -13,9 +14,16 @@ def _utc_now():
 
 str_256 = Annotated[str, mapped_column(String(256))]
 uidpk = Annotated[uuid.UUID, mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)]
-created_at = Annotated[datetime, mapped_column(server_default=func.now())]
-updated_at = Annotated[datetime, mapped_column(server_default=func.now(), onupdate=_utc_now)]
+created_at = Annotated[datetime, mapped_column(
+    DateTime(timezone=True),
+    server_default=func.now()
+)]
 
+updated_at = Annotated[datetime, mapped_column(
+    DateTime(timezone=True),
+    server_default=func.now(), 
+    onupdate=_utc_now
+)]
 class PortalRole(StrEnum):
     ROLE_PORTAL_USER = "ROLE_PORTAL_USER"
     ROLE_PORTAL_ADMIN = "ROLE_PORTAL_ADMIN"

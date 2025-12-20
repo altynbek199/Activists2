@@ -131,6 +131,18 @@ class EventsDAL:
         res = await self.db_session.execute(query)
         events_orm = res.scalars().one_or_none()
         return events_orm
+    
+    async def update_photo(self, event_id, photo) -> Optional[UUID]:
+        query = (
+            update(EventsOrm)
+            .where(EventsOrm.event_id==event_id)
+            .values(photo=photo)
+            .returning(EventsOrm.event_id)
+        )
+
+        res = await self.db_session.execute(query)
+        response = res.scalars().one_or_none()
+        return response
 
 
 
