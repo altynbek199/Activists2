@@ -62,7 +62,65 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq       
     networks:
-      - custom     
+      - custom 
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    depends_on:
+      - loki
+    ports:
+      - "9080:9080"
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro 
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    privileged: true
+    networks:
+      - custom
+  loki:
+    image: grafana/loki:3.6.2
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml  
+    networks:
+      - custom
+  prometheus:
+    depends_on:
+      - backend
+    image: prom/prometheus:v3.8.1
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+       - "9090:9090"
+    networks:
+      - custom 
+  grafana:
+    image: grafana/grafana:12.3.1
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin  
+    volumes:
+      - ./grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana-data:/var/lib/grafana
+      - grafana-config:/etc/grafana
+    depends_on:
+      - prometheus
+    restart: always
+    networks:
+      - custom
+                      
+
+
   backend:
     image: activists_backend_image
     build:
@@ -118,4 +176,7 @@ volumes:
   mongo-data:
   redis-data:
   rabbitmq-data:
+  prometheus-data:
+  grafana-data:
+  grafana-config:
 

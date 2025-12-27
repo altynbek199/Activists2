@@ -10,7 +10,20 @@ from pymongo import AsyncMongoClient
 from beanie import init_beanie
 from socketio import ASGIApp
 from settings import settings
+import logging
+from prometheus_fastapi_instrumentator import Instrumentator
 
+
+# Logger
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s" 
+)
+
+logger = logging.getLogger(__name__)
+
+# Lifespan
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,9 +39,12 @@ async def lifespan(app: FastAPI):
         if client:
             await client.close()
 
+# creating fastapi app
 
 def create_fastapi_app():
     app = FastAPI(title="MNU", lifespan=lifespan)
+
+    instrumentator = Instrumentator.instrument(app).expose(app)
 
     app.add_middleware(
         CORSMiddleware,
