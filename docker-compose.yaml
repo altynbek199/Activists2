@@ -123,6 +123,7 @@ services:
 
   backend:
     image: activists_backend_image
+    container_name: activists_backend_container
     build:
       context: .
     depends_on:
@@ -140,6 +141,10 @@ services:
       REDIS_PASS: ${REDIS_PASS}
     ports:
       - "8000:8080"
+    logging:
+      driver: json-file
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"  
     networks:
       - custom
   worker:

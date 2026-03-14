@@ -1,0 +1,3653 @@
+The following text is a Git repository with code. The structure of the text are sections that begin with ----, followed by a single line containing the file path and file name, followed by a variable amount of lines containing the file contents. The text representing the Git repository ends when the symbols --END-- are encounted. Any further text beyond --END-- are meant to be interpreted as instructions using the aforementioned Git repository as context.
+----
+frontend/index.html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Активисты Университета</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .events-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .event-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .event-author {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .event-date {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .event-image {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+
+        .event-content {
+            padding: 20px;
+        }
+
+        .event-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .event-text {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .event-text.collapsed {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .show-more-btn {
+            color: #667eea;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0;
+            margin-bottom: 15px;
+        }
+
+        .show-more-btn:hover {
+            text-decoration: underline;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 15px 20px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .like-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .like-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .like-btn.liked {
+            color: #ef4444;
+        }
+
+        .error {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .success {
+            color: #10b981;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .profile-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .admin-badge {
+            background: #f59e0b;
+        }
+
+        .superadmin-badge {
+            background: #ef4444;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 10px;
+            color: #999;
+        }
+
+        .create-event-section {
+            margin-bottom: 20px;
+        }
+
+        .user-card {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .user-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .user-card-info {
+            flex: 1;
+        }
+
+        .user-card-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .user-card-email {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .user-card-actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .user-card-actions .btn {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-grant {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-grant:hover {
+            background: #059669;
+        }
+
+        .btn-revoke {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-revoke:hover {
+            background: #d97706;
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: #f5f5f5;
+            border-radius: 15px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .chat-message.own {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .chat-message-header {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .chat-message-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .chat-message-time {
+            font-size: 11px;
+            margin-top: 5px;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 20px;
+            }
+            
+            .user-info {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>🎓 Активисты Университета</h1>
+            </div>
+            <div class="user-info">
+                <div id="authSection">
+                    <button class="btn btn-primary" onclick="showLoginModal()">Войти</button>
+                </div>
+                <div id="userSection" class="hidden">
+                    <span id="userName"></span>
+                    <button class="btn btn-primary" onclick="openChat()">💬 Чат</button>
+                    <button class="btn btn-secondary" onclick="showProfile()">Профиль</button>
+                    <button class="btn btn-secondary" onclick="logout()">Выйти</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Profile Section -->
+        <div id="profileSection" class="profile-section hidden">
+            <h2>Мой профиль</h2>
+            <div id="profileInfo"></div>
+            <button class="btn btn-secondary" onclick="hideProfile()">Скрыть</button>
+        </div>
+
+        <!-- Admin Panel (for admins) -->
+        <div id="adminPanel" class="create-event-section hidden">
+            <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="showCreateEventModal()">+ Создать событие</button>
+            <button class="btn btn-secondary" style="width: 100%;" onclick="showUsersModal()">👥 Управление пользователями</button>
+        </div>
+
+        <!-- Events Section -->
+        <div id="eventsSection">
+            <div class="loading" id="loadingEvents">Загрузка событий...</div>
+            <div class="events-list" id="eventsList"></div>
+        </div>
+
+        <!-- Chat Page -->
+        <div id="chatPage" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: 2000; overflow: hidden;">
+            <div class="container" style="height: 100%; display: flex; flex-direction: column;">
+                <div style="background: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 style="margin: 0; color: #667eea;">💬 Общий чат</h2>
+                        <p style="margin: 5px 0 0 0; color: #999; font-size: 14px;">Вы вошли как: <strong id="chatUserName"></strong></p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="closeChat()">✕ Закрыть</button>
+                </div>
+                
+                <div style="flex: 1; background: white; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden;">
+                    <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 20px;"></div>
+                    
+                    <div style="padding: 15px; border-top: 2px solid #f0f0f0; background: #fafafa;">
+                        <div style="display: flex; gap: 10px;">
+                            <input id="chatInput" type="text" placeholder="Введите сообщение..." style="flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 25px; font-size: 14px;" onkeypress="if(event.key==='Enter') sendMessage()">
+                            <button class="btn btn-primary" onclick="sendMessage()" style="border-radius: 25px; padding: 12px 30px;">Отправить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <h2>Вход в систему</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <div id="loginError" class="error"></div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">Войти</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeLoginModal()">Отмена</button>
+                </div>
+            </form>
+            <hr style="margin: 20px 0;">
+            <p>Нет аккаунта? <a href="#" onclick="showRegisterModal()">Зарегистрироваться</a></p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <h2>Регистрация</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>�мя (минимум 5 символов)</label>
+                    <input type="text" id="registerName" required minlength="5">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <div id="registerError" class="error"></div>
+                <div id="registerSuccess" class="success"></div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeRegisterModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Event Modal -->
+    <div id="createEventModal" class="modal">
+        <div class="modal-content">
+            <h2>Создать событие</h2>
+            <form id="createEventForm">
+                <div class="form-group">
+                    <label>Заголовок</label>
+                    <input type="text" id="eventTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Описание</label>
+                    <textarea id="eventText" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Фото (необязательно)</label>
+                    <input type="file" id="eventPhoto" accept="image/*">
+                </div>
+                <div id="createEventError" class="error"></div>
+                <div id="createEventSuccess" class="success"></div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateEventModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Users Management Modal -->
+    <div id="usersModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <h2>Управление пользователями</h2>
+            <div class="loading" id="loadingUsers" style="color: #333;">Загрузка...</div>
+            <div id="usersListContainer" style="max-height: 500px; overflow-y: auto;"></div>
+            <button type="button" class="btn btn-secondary" style="margin-top: 20px;" onclick="closeUsersModal()">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:8000'; // Замените на ваш URL API
+        let currentUser = null;
+        let accessToken = null;
+        let currentPage = 1;
+        let isLoading = false;
+        let hasMoreEvents = true;
+        let socket = null;
+        let chatInitialized = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadEvents();
+            
+            // Setup forms
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            document.getElementById('createEventForm').addEventListener('submit', handleCreateEvent);
+
+            // Setup infinite scroll
+            window.addEventListener('scroll', handleScroll);
+        });
+
+        // Auth Functions
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const formData = new URLSearchParams();
+                formData.append('username', email);
+                formData.append('password', password);
+                
+                const response = await fetch(`${API_BASE}/login/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Неверный email или пароль');
+                }
+
+                const data = await response.json();
+                accessToken = data.access_token;
+                localStorage.setItem('accessToken', accessToken);
+                
+                await loadCurrentUser();
+                closeLoginModal();
+                document.getElementById('loginError').textContent = '';
+                document.getElementById('loginForm').reset();
+            } catch (error) {
+                document.getElementById('loginError').textContent = error.message;
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/user/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        hashed_password: password
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Ошибка регистрации');
+                }
+
+                document.getElementById('registerSuccess').textContent = 'Регистрация успешна! Теперь войдите.';
+                document.getElementById('registerError').textContent = '';
+                document.getElementById('registerForm').reset();
+                
+                setTimeout(() => {
+                    closeRegisterModal();
+                    showLoginModal();
+                }, 2000);
+            } catch (error) {
+                document.getElementById('registerError').textContent = error.message;
+                document.getElementById('registerSuccess').textContent = '';
+            }
+        }
+
+        async function loadCurrentUser() {
+            if (!accessToken) {
+                logout();
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/login/test_auth`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    // Если 401 - токен невалидный/истёк
+                    if (response.status === 401) {
+                        console.log('Токен истёк или невалиден');
+                        logout();
+                        return;
+                    }
+                    throw new Error('Ошибка авторизации');
+                }
+
+                const data = await response.json();
+                currentUser = data.current_user;
+                updateUIForUser();
+            } catch (error) {
+                console.error('Auth error:', error);
+                logout();
+            }
+        }
+
+        function checkAuth() {
+            accessToken = localStorage.getItem('accessToken');
+            if (accessToken && accessToken !== 'null' && accessToken !== 'undefined') {
+                loadCurrentUser();
+            }
+        }
+
+        function updateUIForUser() {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('userSection').classList.remove('hidden');
+            document.getElementById('userName').textContent = currentUser.name;
+            
+            // Show create event button for admins
+            const isAdmin = currentUser.roles.includes('ROLE_PORTAL_ADMIN') || 
+                          currentUser.roles.includes('ROLE_PORTAL_SUPERADMIN');
+            
+            if (isAdmin) {
+                document.getElementById('adminPanel').classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            accessToken = null;
+            currentUser = null;
+            localStorage.removeItem('accessToken');
+            
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('userSection').classList.add('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('profileSection').classList.add('hidden');
+            
+            loadEvents(); // Reload events without auth
+        }
+
+        // Profile Functions
+        function showProfile() {
+            const profileInfo = document.getElementById('profileInfo');
+            const roles = currentUser.roles.map(role => {
+                let badgeClass = 'role-badge';
+                let roleName = 'Пользователь';
+                
+                if (role === 'ROLE_PORTAL_ADMIN') {
+                    badgeClass += ' admin-badge';
+                    roleName = 'Админ';
+                } else if (role === 'ROLE_PORTAL_SUPERADMIN') {
+                    badgeClass += ' superadmin-badge';
+                    roleName = 'Супер-админ';
+                }
+                
+                return `<span class="${badgeClass}">${roleName}</span>`;
+            }).join('');
+            
+            const isSuperAdmin = currentUser.roles.includes('ROLE_PORTAL_SUPERADMIN');
+            
+            profileInfo.innerHTML = `
+                <p><strong>ID:</strong> ${currentUser.user_id}</p>
+                <p><strong>�мя:</strong> ${currentUser.name}</p>
+                <p><strong>Email:</strong> ${currentUser.email}</p>
+                <p><strong>Роли:</strong> ${roles}</p>
+                <p><strong>Дата регистрации:</strong> ${new Date(currentUser.created_at).toLocaleDateString('ru-RU')}</p>
+                ${!isSuperAdmin ? '<button class="btn btn-danger" style="margin-top: 15px;" onclick="deleteMyAccount()">Удалить мой аккаунт</button>' : ''}
+            `;
+            
+            document.getElementById('profileSection').classList.remove('hidden');
+        }
+
+        function hideProfile() {
+            document.getElementById('profileSection').classList.add('hidden');
+        }
+
+        // Events Functions
+        async function loadEvents(resetPage = false) {
+            if (isLoading || (!hasMoreEvents && !resetPage)) return;
+            
+            if (resetPage) {
+                currentPage = 1;
+                hasMoreEvents = true;
+                document.getElementById('eventsList').innerHTML = '';
+            }
+            
+            try {
+                isLoading = true;
+                document.getElementById('loadingEvents').style.display = 'block';
+                
+                const response = await fetch(`${API_BASE}/event/get?page=${currentPage}`);
+                
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки событий');
+                }
+
+                const events = await response.json();
+                document.getElementById('loadingEvents').style.display = 'none';
+                
+                if (events.length === 0) {
+                    hasMoreEvents = false;
+                    if (currentPage === 1) {
+                        document.getElementById('eventsList').innerHTML = '<div class="empty-state"><h3>Пока нет событий</h3><p>Будьте первым, кто создаст событие!</p></div>';
+                    }
+                } else {
+                    appendEvents(events);
+                    currentPage++;
+                }
+                
+                isLoading = false;
+            } catch (error) {
+                document.getElementById('loadingEvents').textContent = 'Ошибка загрузки событий';
+                console.error(error);
+                isLoading = false;
+            }
+        }
+
+        function handleScroll() {
+            if (isLoading || !hasMoreEvents) return;
+            
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            
+            // Загружаем новые события когда до конца страницы осталось 300px
+            if (scrollTop + windowHeight >= documentHeight - 300) {
+                loadEvents();
+            }
+        }
+
+        function appendEvents(events) {
+            const list = document.getElementById('eventsList');
+            
+            // Сортировка по дате (новые сверху)
+            events.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            
+            const eventsHTML = events.map(event => {
+                const isAdmin = currentUser && (
+                    currentUser.roles.includes('ROLE_PORTAL_ADMIN') || 
+                    currentUser.roles.includes('ROLE_PORTAL_SUPERADMIN')
+                );
+                
+                const textLength = event.text.length;
+                const needsExpand = textLength > 150;
+                
+                return `
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div>
+                                <div class="event-author">Автор: ${event.author_id}</div>
+                                <div class="event-date">${new Date(event.created_at).toLocaleDateString('ru-RU', { 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}</div>
+                            </div>
+                            ${isAdmin ? `<button class="btn btn-danger" onclick="deleteEvent('${event.event_id}')">Удалить</button>` : ''}
+                        </div>
+                        ${event.photo ? `<img src="${event.photo}" class="event-image" alt="${event.title}" onerror="this.style.display='none'">` : ''}
+                        <div class="event-content">
+                            <div class="event-title">${event.title}</div>
+                            <div class="event-text ${needsExpand ? 'collapsed' : ''}" id="text-${event.event_id}">${event.text}</div>
+                            ${needsExpand ? `<button class="show-more-btn" onclick="toggleText('${event.event_id}')">Показать полностью...</button>` : ''}
+                        </div>
+                        <div class="event-actions">
+                            <button class="like-btn" onclick="likeEvent('${event.event_id}')" id="like-btn-${event.event_id}">
+                                ❤️ <span id="likes-${event.event_id}">${event.likes}</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            list.insertAdjacentHTML('beforeend', eventsHTML);
+        }
+
+        function toggleText(eventId) {
+            const textElement = document.getElementById(`text-${eventId}`);
+            const btn = event.target;
+            
+            if (textElement.classList.contains('collapsed')) {
+                textElement.classList.remove('collapsed');
+                btn.textContent = 'Скрыть';
+            } else {
+                textElement.classList.add('collapsed');
+                btn.textContent = 'Показать полностью...';
+            }
+        }
+
+        async function handleCreateEvent(e) {
+            e.preventDefault();
+            
+            if (!currentUser) {
+                document.getElementById('createEventError').textContent = 'Необходима авторизация';
+                return;
+            }
+            
+            const title = document.getElementById('eventTitle').value;
+            const text = document.getElementById('eventText').value;
+            const photoFile = document.getElementById('eventPhoto').files[0];
+            
+            try {
+                // Создаём FormData для отправки данных
+                const formData = new FormData();
+                
+                // Добавляем поля напрямую (не JSON!)
+                formData.append('title', title);
+                formData.append('text', text);
+                formData.append('author_id', currentUser.user_id);
+                
+                // Добавляем файл только если он выбран
+                if (photoFile) {
+                    formData.append('uploaded_file', photoFile);
+                }
+                
+                const response = await fetch(`${API_BASE}/event/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                        // НЕ добавляем Content-Type, браузер сам установит multipart/form-data
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Ошибка создания события');
+                }
+
+                document.getElementById('createEventSuccess').textContent = 'Событие успешно создано!';
+                document.getElementById('createEventError').textContent = '';
+                document.getElementById('createEventForm').reset();
+                
+                setTimeout(() => {
+                    closeCreateEventModal();
+                    loadEvents(true); // Reload events from page 1
+                }, 1500);
+            } catch (error) {
+                document.getElementById('createEventError').textContent = error.message;
+                document.getElementById('createEventSuccess').textContent = '';
+            }
+        }
+
+        async function deleteEvent(eventId) {
+            if (!confirm('Вы уверены, что хотите удалить это событие?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/event/delete?event_id=${eventId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка удаления события');
+                }
+
+                loadEvents(true); // Reload events from page 1
+            } catch (error) {
+                alert('Ошибка удаления события: ' + error.message);
+            }
+        }
+
+        function likeEvent(eventId) {
+            // Это демо-функция, в реальности нужен эндпоинт для лайков
+            const likesElement = document.getElementById(`likes-${eventId}`);
+            const likeBtn = document.getElementById(`like-btn-${eventId}`);
+            const currentLikes = parseInt(likesElement.textContent);
+            
+            if (likeBtn.classList.contains('liked')) {
+                likeBtn.classList.remove('liked');
+                likesElement.textContent = currentLikes - 1;
+            } else {
+                likeBtn.classList.add('liked');
+                likesElement.textContent = currentLikes + 1;
+            }
+        }
+
+        // Modal Functions
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('active');
+        }
+
+        function showRegisterModal() {
+            closeLoginModal();
+            document.getElementById('registerModal').classList.add('active');
+        }
+
+        function closeRegisterModal() {
+            document.getElementById('registerModal').classList.remove('active');
+            document.getElementById('registerSuccess').textContent = '';
+        }
+
+        function showCreateEventModal() {
+            document.getElementById('createEventModal').classList.add('active');
+        }
+
+        function closeCreateEventModal() {
+            document.getElementById('createEventModal').classList.remove('active');
+            document.getElementById('createEventSuccess').textContent = '';
+        }
+
+        // Users Management Functions
+        async function showUsersModal() {
+            document.getElementById('usersModal').classList.add('active');
+            document.getElementById('loadingUsers').style.display = 'block';
+            document.getElementById('usersListContainer').innerHTML = '';
+            
+            try {
+                const response = await fetch(`${API_BASE}/user/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки пользователей');
+                }
+
+                const users = await response.json();
+                document.getElementById('loadingUsers').style.display = 'none';
+                displayUsers(users);
+            } catch (error) {
+                document.getElementById('loadingUsers').textContent = 'Ошибка: ' + error.message;
+            }
+        }
+
+        function displayUsers(users) {
+            const container = document.getElementById('usersListContainer');
+            
+            if (users.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">Пользователи не найдены</p>';
+                return;
+            }
+
+            const isSuperAdmin = currentUser.roles.includes('ROLE_PORTAL_SUPERADMIN');
+            const isAdmin = currentUser.roles.includes('ROLE_PORTAL_ADMIN');
+            
+            container.innerHTML = users.map(user => {
+                const userIsAdmin = user.roles.includes('ROLE_PORTAL_ADMIN');
+                const userIsSuperAdmin = user.roles.includes('ROLE_PORTAL_SUPERADMIN');
+                const isCurrentUser = user.user_id === currentUser.user_id;
+                
+                const roles = user.roles.map(role => {
+                    let badgeClass = 'role-badge';
+                    let roleName = 'Пользователь';
+                    
+                    if (role === 'ROLE_PORTAL_ADMIN') {
+                        badgeClass += ' admin-badge';
+                        roleName = 'Админ';
+                    } else if (role === 'ROLE_PORTAL_SUPERADMIN') {
+                        badgeClass += ' superadmin-badge';
+                        roleName = 'Супер-админ';
+                    }
+                    
+                    return `<span class="${badgeClass}">${roleName}</span>`;
+                }).join('');
+                
+                let actions = '';
+                
+                if (!isCurrentUser) {
+                    // Только супер-админ может управлять привилегиями
+                    if (isSuperAdmin && !userIsSuperAdmin) {
+                        if (userIsAdmin) {
+                            actions += `<button class="btn btn-revoke" onclick="revokeAdminPrivilege('${user.user_id}')">Забрать админа</button>`;
+                        } else {
+                            actions += `<button class="btn btn-grant" onclick="grantAdminPrivilege('${user.user_id}')">Выдать админа</button>`;
+                        }
+                    }
+                    
+                    // Админы и супер-админы могут удалять любых пользователей (кроме супер-админов)
+                    if ((isAdmin || isSuperAdmin) && !userIsSuperAdmin) {
+                        actions += `<button class="btn btn-danger" onclick="deleteUser('${user.user_id}')">Удалить</button>`;
+                    }
+                }
+                
+                return `
+                    <div class="user-card">
+                        <div class="user-card-header">
+                            <div class="user-card-info">
+                                <div class="user-card-name">${user.name} ${isCurrentUser ? '(Вы)' : ''}</div>
+                                <div class="user-card-email">${user.email}</div>
+                                <div style="margin-top: 5px;">${roles}</div>
+                            </div>
+                            <div class="user-card-actions">
+                                ${actions}
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #999;">
+                            Зарегистрирован: ${new Date(user.created_at).toLocaleDateString('ru-RU')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function grantAdminPrivilege(userId) {
+            if (!confirm('Вы уверены, что хотите выдать права админа этому пользователю?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/user/admin_privilege_grant?user_id=${userId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Ошибка выдачи прав');
+                }
+
+                alert('Права админа успешно выданы!');
+                showUsersModal(); // Reload users list
+            } catch (error) {
+                alert('Ошибка: ' + error.message);
+            }
+        }
+
+        async function revokeAdminPrivilege(userId) {
+            if (!confirm('Вы уверены, что хотите забрать права админа у этого пользователя?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/user/admin_privilege_revoke?user_id=${userId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Ошибка отзыва прав');
+                }
+
+                alert('Права админа успешно забраны!');
+                showUsersModal(); // Reload users list
+            } catch (error) {
+                alert('Ошибка: ' + error.message);
+            }
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm('Вы уверены, что хотите удалить этого пользователя? Это действие необратимо!')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/user/?user_id=${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Ошибка удаления пользователя');
+                }
+
+                alert('Пользователь успешно удален!');
+                showUsersModal(); // Reload users list
+            } catch (error) {
+                alert('Ошибка: ' + error.message);
+            }
+        }
+
+        function closeUsersModal() {
+            document.getElementById('usersModal').classList.remove('active');
+        }
+
+        async function deleteMyAccount() {
+            const confirmText = prompt('Вы уверены, что хотите удалить свой аккаунт? Это действие необратимо!\n\nНапишите "УДАЛ�ТЬ" для подтверждения:');
+            
+            if (confirmText !== 'УДАЛ�ТЬ') {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/user/?user_id=${currentUser.user_id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Ошибка удаления аккаунта');
+                }
+
+                alert('Ваш аккаунт успешно удален!');
+                logout();
+            } catch (error) {
+                alert('Ошибка: ' + error.message);
+            }
+        }
+
+        // Chat Functions
+        function openChat() {
+            if (!currentUser) {
+                alert('Необходима авторизация');
+                return;
+            }
+            
+            document.getElementById('chatPage').classList.remove('hidden');
+            document.getElementById('eventsSection').style.display = 'none';
+            document.getElementById('chatUserName').textContent = currentUser.name;
+            
+            if (!chatInitialized) {
+                initializeChat();
+                chatInitialized = true;
+            }
+        }
+
+        function closeChat() {
+            document.getElementById('chatPage').classList.add('hidden');
+            document.getElementById('eventsSection').style.display = 'block';
+        }
+
+        function initializeChat() {
+            // Подключение к Socket.IO
+            socket = io(API_BASE);
+            
+            socket.on('connect', () => {
+                console.log('Connected to chat server');
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Disconnected from chat server');
+            });
+
+            socket.on('new_message', (msg) => {
+                renderChatMessage(msg);
+            });
+
+            // Загрузка истории сообщений
+            loadChatHistory();
+        }
+
+        async function loadChatHistory() {
+            try {
+                const response = await fetch(`${API_BASE}/history?limit=50`);
+                
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки истории');
+                }
+
+                const messages = await response.json();
+                messages.forEach(msg => renderChatMessage(msg, true));
+            } catch (error) {
+                console.error('Ошибка загрузки истории чата:', error);
+            }
+        }
+
+        function renderChatMessage(msg, isHistory = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const isOwnMessage = currentUser && msg.sender_id === currentUser.user_id;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${isOwnMessage ? 'own' : ''}`;
+            
+            const time = msg.created_at ? new Date(msg.created_at).toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : new Date().toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="chat-message-header">${msg.sender_name}</div>
+                <div class="chat-message-text">${msg.text}</div>
+                <div class="chat-message-time">${time}</div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            
+            // Прокрутка вниз только если не загружаем историю
+            if (!isHistory) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        function sendMessage() {
+            if (!currentUser || !socket) return;
+            
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            
+            if (text === '') return;
+            
+            const messageData = {
+                text: text,
+                sender_id: currentUser.user_id,
+                sender_name: currentUser.name
+            };
+            
+            socket.emit('message', messageData);
+            
+            // Отображаем своё сообщение сразу
+            renderChatMessage(messageData);
+            
+            input.value = '';
+        }
+    </script>
+</body>
+</html>
+----
+api/handlers.py
+from api.schemas import (UserAddDTO, UserShowDTO, DeleteUserResponse, 
+                         UpdatedUserResponse, UpdateUserRequest, EventAddDTO, 
+                         EventShowDTO, DeleteEventResponse)
+from db.database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends, APIRouter, File, HTTPException, status, UploadFile
+from sqlalchemy.exc import IntegrityError
+from logging import getLogger
+from api.actions.user import (_create_new_user, _delete_user, _get_user_by_email,
+_get_user_by_id, _update_user, check_user_permission, _get_users) 
+from api.actions.auth import get_current_user_from_token
+from sqlalchemy.dialects.postgresql import UUID 
+from db.models.models import UsersOrm, EventsOrm
+import uuid
+from api.actions.events import _create_new_event, _delete_event, _get_events_limit_10_by_page, _get_event_by_id
+
+logger = getLogger(__name__)
+
+user_router = APIRouter()
+
+#######################
+# User
+#######################
+
+
+
+@user_router.post("/", response_model=UserShowDTO)
+async def create_user(
+        cred: UserAddDTO,
+        db: AsyncSession = Depends(get_db)
+) -> UserShowDTO:
+        try:
+              return await _create_new_user(cred, db)
+        except IntegrityError as err:
+              logger.error(err)
+              raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f'Database erroe: {err}')
+        
+@user_router.delete("/", response_model=DeleteUserResponse)
+async def delete_user(
+       user_id: uuid.UUID,
+       db: AsyncSession = Depends(get_db),
+       current_user: UsersOrm = Depends(get_current_user_from_token)
+) -> DeleteUserResponse:
+       # check for deletion and existence
+       user_for_deletion = await _get_user_by_id(user_id=user_id, session=db)
+       if user_for_deletion is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
+
+       if not await check_user_permission(
+             target_user=user_for_deletion,
+             current_user=current_user
+       ):
+              raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+       
+       deleted_user_id = await _delete_user(user_id=user_id, session=db)
+       if deleted_user_id is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User    with id {user_id} not found ")
+       return DeleteUserResponse(deleted_user_id=deleted_user_id)
+
+@user_router.get("/", response_model=UserShowDTO)
+async def get_user_by_uuid(
+       user_id: uuid.UUID,
+       db: AsyncSession = Depends(get_db),
+       current_user: UsersOrm = Depends(get_current_user_from_token)
+) -> UserShowDTO:
+       user = await _get_user_by_id(user_id=user_id, session=db)
+       if user is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
+       return user
+
+@user_router.patch("/", response_model=UpdatedUserResponse)
+async def update_user(
+       user_id: uuid.UUID,
+       body: UpdateUserRequest,
+       db: AsyncSession = Depends(get_db),
+       current_user: UsersOrm = Depends(get_current_user_from_token)
+) -> UpdatedUserResponse:
+       
+       # check if there is params in body
+       update_user_params = body.model_dump(exclude_none=True)
+       if update_user_params == {}:
+              raise HTTPException(
+                     status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                     detail="At least one parameter for user update info should be provided"
+              )
+       
+       user_for_update = await _get_user_by_id(user_id=user_id, session=db)
+       if user_for_update is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
+       
+       if not await check_user_permission(
+              target_user=user_for_update,
+              current_user=current_user
+       ):
+              raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+       try:
+              updated_user_id = await _update_user(user_id=user_id, updated_user_params=update_user_params, session=db)
+       except IntegrityError as err:
+              logger.error(err)
+              raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Database error: {err}")
+       return UpdatedUserResponse(updated_user_id=updated_user_id)
+
+
+@user_router.get("/users", response_model=list[UserShowDTO])
+async def get_users(
+       db: AsyncSession = Depends(get_db),
+       current_user: UsersOrm = Depends(get_current_user_from_token)
+) -> list[UserShowDTO]:
+       if not(current_user.is_admin, current_user.is_superadmin):
+              raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+       users = await _get_users(session=db)
+       if users is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Users not found")
+       return users
+
+@user_router.patch("/admin_privilege_grant", response_model=UpdatedUserResponse)
+async def grant_admin_privilege(
+       user_id: uuid.UUID,
+       db: AsyncSession = Depends(get_db),
+       current_user: UsersOrm = Depends(get_current_user_from_token)
+) -> UpdatedUserResponse:
+       if not current_user.is_superadmin:
+              raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+       if current_user.user_id == user_id:
+              raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot manage privileges of itself")
+       
+       user_for_promotion = await _get_user_by_id(user_id=user_id, session=db)
+       if user_for_promotion is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
+       if user_for_promotion.is_admin or user_for_promotion.is_superadmin:
+              raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"User with id {user_id} already promoted to admin/superadmin")
+       updated_user_params = {
+              "roles": user_for_promotion.enrich_admin_roles_by_admin_role()
+       }
+       try:
+              updated_user_id = await _update_user(
+                     user_id=user_id,
+                     updated_user_params=updated_user_params,
+                     session=db
+              ) 
+       except IntegrityError as err:
+              logger.error(err)
+              raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Database error: {err}")
+       return UpdatedUserResponse(updated_user_id=updated_user_id)
+
+       
+
+@user_router.patch("/admin_privilege_revoke", response_model=UpdatedUserResponse)
+async def revoke_admin_privilege(
+       user_id: uuid.UUID,
+       db: AsyncSession = Depends(get_db),
+       current_user: UsersOrm = Depends(get_current_user_from_token)
+) -> UpdatedUserResponse:
+       if not current_user.is_superadmin:
+              raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+       if current_user.user_id == user_id:
+              raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot manage privileges of itself")
+       
+       user_for_promotion = await _get_user_by_id(user_id=user_id, session=db)
+       if user_for_promotion is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
+       if not (user_for_promotion.is_admin or user_for_promotion.is_superadmin):
+              raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"User with id {user_id} is not admin")
+       updated_user_params = {
+              "roles": user_for_promotion.remove_admin_role_from_model()
+       }
+       try:
+              updated_user_id = await _update_user(
+                     user_id=user_id,
+                     updated_user_params=updated_user_params,
+                     session=db
+              ) 
+       except IntegrityError as err:
+              logger.error(err)
+              raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Database error: {err}")
+       return UpdatedUserResponse(updated_user_id=updated_user_id)
+
+
+####################
+# Events
+####################
+
+event_router = APIRouter()
+
+
+@event_router.post("/add", response_model=EventShowDTO)
+async def create_events(
+        cred: EventAddDTO = Depends(EventAddDTO.as_form),
+        uploaded_file: UploadFile | None = File(None),
+        db: AsyncSession = Depends(get_db),
+        current_user: UsersOrm = Depends(get_current_user_from_token)
+) -> EventShowDTO:
+        
+       if not (current_user.is_admin or current_user.is_superadmin):
+              raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+       author = await _get_user_by_id(user_id=cred.author_id, session=db)
+       if author is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {cred.author_id} not found" )
+       if not (author.is_admin or author.is_superadmin):
+              raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Author must be admin/superadmin")
+
+       try:
+              return await _create_new_event(cred, uploaded_file, db)
+       except IntegrityError as err:
+              logger.error(err)
+              raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f'Database erroe: {err}')
+        
+@event_router.delete("/delete", response_model=DeleteEventResponse)
+async def delete_event(
+       event_id: uuid.UUID,
+       db: AsyncSession = Depends(get_db),
+       current_user: UsersOrm = Depends(get_current_user_from_token)
+) -> DeleteEventResponse:
+       # check for deletion and existence
+
+       if not (current_user.is_admin or current_user.is_superadmin):
+              raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+       
+       event_for_deletion = await _get_event_by_id(event_id=event_id, session=db)
+       if event_for_deletion is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id {event_id} not found")
+
+       
+       
+       deleted_event_id = await _delete_event(event_id=event_id, session=db)
+       if deleted_event_id is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Event    with id {event_id} not found ")
+       return DeleteEventResponse(deleted_event_id=deleted_event_id)
+
+@event_router.get("/get", response_model=list[EventShowDTO])
+async def get_events_limit_10_by_page(
+       page: int,
+       db: AsyncSession = Depends(get_db)
+) -> list[EventShowDTO]:
+       events = await _get_events_limit_10_by_page(page=page, session=db)
+       if events is None:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Events not found")
+
+       return events
+----
+docker-compose.yaml
+services:
+  db:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]  
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - db-data:/var/lib/postgresql/data  
+    ports:
+      - "5433:5432"
+    networks:
+      - custom 
+  mongodb:
+    image: mongo:latest
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASS}
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - custom
+
+  redis:
+    image: redis:alpine
+    restart: always
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASS}
+    command: [
+      "redis-server",
+      "--requirepass", "${REDIS_PASS}",
+      "--appendonly", "yes"
+    ]  
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - custom   
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq       
+    networks:
+      - custom 
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    depends_on:
+      - loki
+    ports:
+      - "9080:9080"
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro 
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    privileged: true
+    networks:
+      - custom
+  loki:
+    image: grafana/loki:3.6.2
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml  
+    networks:
+      - custom
+  prometheus:
+    depends_on:
+      - backend
+    image: prom/prometheus:v3.8.1
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+       - "9090:9090"
+    networks:
+      - custom 
+  grafana:
+    image: grafana/grafana:12.3.1
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin  
+    volumes:
+      - ./grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana-data:/var/lib/grafana
+      - grafana-config:/etc/grafana
+    depends_on:
+      - prometheus
+    restart: always
+    networks:
+      - custom
+                      
+
+
+  backend:
+    image: activists_backend_image
+    container_name: activists_backend_container
+    build:
+      context: .
+    depends_on:
+      db:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
+      redis:  
+        condition: service_started  
+    environment:  
+      REAL_DATABASE_URL: "postgresql+asyncpg://${DB_USER}:${DB_PASS}@db:5432/${DB_DB}"      
+      MONGO_URL: "mongodb://${MONGO_APP_USER}:${MONGO_APP_PASS}@mongodb:27017/${MONGO_DB}?authSource=admin"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASS: ${REDIS_PASS}
+    ports:
+      - "8000:8080"
+    logging:
+      driver: json-file
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"  
+    networks:
+      - custom
+  worker:
+    build: .
+    command: celery -A services.celery_app worker --loglevel=INFO
+    environment:
+      CELERY_BROKER_URL: amqp://guest:guest@rabbitmq:5672//
+      CELERY_RESULT_BACKEND: rpc://
+    depends_on:
+      rabbitmq:
+        condition: service_healthy 
+    networks:
+      - custom         
+
+  frontend:
+    image: activists_frontend_image
+    build:
+      context: ./frontend
+    ports:
+      - "80:80"
+    environment:
+      BACKEND_HOST: backend 
+      BACKEND_PORT: 8080
+    depends_on:
+      backend:
+        condition: service_started
+    networks:
+      - custom       
+networks:
+  custom:
+    driver: bridge
+volumes:
+  db-data:
+  mongo-data:
+  redis-data:
+  rabbitmq-data:
+  prometheus-data:
+  grafana-data:
+  grafana-config:
+
+
+----
+alembic.ini
+# A generic, single database configuration.
+
+[alembic]
+# path to migration scripts.
+# this is typically a path given in POSIX (e.g. forward slashes)
+# format, relative to the token %(here)s which refers to the location of this
+# ini file
+script_location = %(here)s/migrations
+
+# template used to generate migration file names; The default value is %%(rev)s_%%(slug)s
+# Uncomment the line below if you want the files to be prepended with date and time
+# see https://alembic.sqlalchemy.org/en/latest/tutorial.html#editing-the-ini-file
+# for all available tokens
+# file_template = %%(year)d_%%(month).2d_%%(day).2d_%%(hour).2d%%(minute).2d-%%(rev)s_%%(slug)s
+
+# sys.path path, will be prepended to sys.path if present.
+# defaults to the current working directory.  for multiple paths, the path separator
+# is defined by "path_separator" below.
+prepend_sys_path = .
+
+
+# timezone to use when rendering the date within the migration file
+# as well as the filename.
+# If specified, requires the tzdata library which can be installed by adding
+# `alembic[tz]` to the pip requirements.
+# string value is passed to ZoneInfo()
+# leave blank for localtime
+# timezone =
+
+# max length of characters to apply to the "slug" field
+# truncate_slug_length = 40
+
+# set to 'true' to run the environment during
+# the 'revision' command, regardless of autogenerate
+# revision_environment = false
+
+# set to 'true' to allow .pyc and .pyo files without
+# a source .py file to be detected as revisions in the
+# versions/ directory
+# sourceless = false
+
+# version location specification; This defaults
+# to <script_location>/versions.  When using multiple version
+# directories, initial revisions must be specified with --version-path.
+# The path separator used here should be the separator specified by "path_separator"
+# below.
+# version_locations = %(here)s/bar:%(here)s/bat:%(here)s/alembic/versions
+
+# path_separator; This indicates what character is used to split lists of file
+# paths, including version_locations and prepend_sys_path within configparser
+# files such as alembic.ini.
+# The default rendered in new alembic.ini files is "os", which uses os.pathsep
+# to provide os-dependent path splitting.
+#
+# Note that in order to support legacy alembic.ini files, this default does NOT
+# take place if path_separator is not present in alembic.ini.  If this
+# option is omitted entirely, fallback logic is as follows:
+#
+# 1. Parsing of the version_locations option falls back to using the legacy
+#    "version_path_separator" key, which if absent then falls back to the legacy
+#    behavior of splitting on spaces and/or commas.
+# 2. Parsing of the prepend_sys_path option falls back to the legacy
+#    behavior of splitting on spaces, commas, or colons.
+#
+# Valid values for path_separator are:
+#
+# path_separator = :
+# path_separator = ;
+# path_separator = space
+# path_separator = newline
+#
+# Use os.pathsep. Default configuration used for new projects.
+path_separator = os
+
+# set to 'true' to search source files recursively
+# in each "version_locations" directory
+# new in Alembic version 1.10
+# recursive_version_locations = false
+
+# the output encoding used when revision files
+# are written from script.py.mako
+# output_encoding = utf-8
+
+# database URL.  This is consumed by the user-maintained env.py script only.
+# other means of configuring database URLs may be customized within the env.py
+# file.
+sqlalchemy.url = driver://user:pass@localhost/dbname
+
+
+[post_write_hooks]
+# post_write_hooks defines scripts or Python functions that are run
+# on newly generated revision scripts.  See the documentation for further
+# detail and examples
+
+# format using "black" - use the console_scripts runner, against the "black" entrypoint
+# hooks = black
+# black.type = console_scripts
+# black.entrypoint = black
+# black.options = -l 79 REVISION_SCRIPT_FILENAME
+
+# lint with attempts to fix using "ruff" - use the module runner, against the "ruff" module
+# hooks = ruff
+# ruff.type = module
+# ruff.module = ruff
+# ruff.options = check --fix REVISION_SCRIPT_FILENAME
+
+# Alternatively, use the exec runner to execute a binary found on your PATH
+# hooks = ruff
+# ruff.type = exec
+# ruff.executable = ruff
+# ruff.options = check --fix REVISION_SCRIPT_FILENAME
+
+# Logging configuration.  This is also consumed by the user-maintained
+# env.py script only.
+[loggers]
+keys = root,sqlalchemy,alembic
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = WARNING
+handlers = console
+qualname =
+
+[logger_sqlalchemy]
+level = WARNING
+handlers =
+qualname = sqlalchemy.engine
+
+[logger_alembic]
+level = INFO
+handlers =
+qualname = alembic
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(levelname)-5.5s [%(name)s] %(message)s
+datefmt = %H:%M:%S
+
+----
+db/dals.py
+from sqlalchemy.ext.asyncio import AsyncSession
+from db.models.models import UsersOrm, PortalRole, EventsOrm
+from sqlalchemy.dialects.postgresql import UUID
+from typing import Optional
+from sqlalchemy import select, update, delete
+
+
+
+
+#########
+# User
+#########
+
+class UserDAL:
+    """ Data Access Layer fro operating user info """
+    def __init__(self, db_session: AsyncSession):
+        self.db_session = db_session
+
+    async def create_user(self, name: str, email: str, hashed_password: str, roles: list[PortalRole]) -> UsersOrm:
+        new_user = UsersOrm(
+            name=name,
+            email=email,
+            hashed_password=hashed_password,
+            roles=roles,
+        )
+
+        self.db_session.add(new_user)
+        await self.db_session.flush()
+        return new_user
+    
+    async def delete_user(self, user_id: UUID) -> Optional[UUID]:
+        query = (delete(UsersOrm)
+                 .where(UsersOrm.user_id==user_id)
+                 .returning(UsersOrm.user_id)
+                 )
+        res = await self.db_session.execute(query)
+        deleted_user_id = res.scalars().one_or_none()
+        return deleted_user_id
+    
+    async def update_user(self, user_id: UUID, **kwargs) -> Optional[UUID]:
+        query = (
+            update(UsersOrm)
+            .where(UsersOrm.user_id==user_id)
+            .values(kwargs)
+            .returning(UsersOrm.user_id)
+        )
+
+        res = await self.db_session.execute(query)
+        updated_user_id = res.scalars().one_or_none()
+        return updated_user_id
+    
+    async def get_user_by_id(self, user_id: UUID) -> UsersOrm:
+        query = (
+            select(UsersOrm)
+            .where(UsersOrm.user_id==user_id)
+        )
+
+        res = await self.db_session.execute(query)
+        user_orm = res.scalars().one_or_none()
+        return user_orm
+    
+    async def get_user_by_email(self, email: str) -> UsersOrm:
+        query = (
+            select(UsersOrm)
+            .where(UsersOrm.email==email)
+        )
+
+        res = await self.db_session.execute(query)
+        user_orm = res.scalars().one_or_none()
+        return user_orm
+    
+    async def get_users(self) -> list[UsersOrm]:
+        query = (
+            select(UsersOrm)
+        )
+
+        res = await self.db_session.execute(query)
+        users_orm = res.scalars().all()
+        return users_orm
+
+
+#########
+# Event
+#########
+
+class EventsDAL:
+    ''' DAL for operating events info'''
+
+    def __init__(self, db_session: AsyncSession):
+        self.db_session = db_session
+
+    async def create_event(self, title: str, text: str, author_id: UUID, photo: Optional[str] = None) -> EventsOrm:
+        new_event = EventsOrm(
+            title=title,
+            text=text,
+            author_id=author_id,
+            photo=photo
+        )
+
+        self.db_session.add(new_event)
+        await self.db_session.flush()
+        return new_event
+    
+    async def delete_event(self, event_id: UUID) -> Optional[UUID]:
+        query = (delete(EventsOrm)
+                 .where(EventsOrm.event_id==event_id)
+                 .returning(EventsOrm.event_id)
+                 )
+        res = await self.db_session.execute(query)
+        deleted_event_id = res.scalars().one_or_none()
+        return deleted_event_id
+    
+
+
+    async def get_events_limit_10(self, offset) -> list[EventsOrm]:
+        query = (
+            select(EventsOrm)
+            .order_by(EventsOrm.created_at.desc())
+            .offset(offset)
+            .limit(10)
+        )
+        res = await self.db_session.execute(query)
+        events_orm = res.scalars().all()
+        return events_orm
+    
+    async def get_event_by_id(self, event_id) -> EventsOrm:
+        query = (
+            select(EventsOrm)
+            .where(EventsOrm.event_id==event_id)
+        )
+        res = await self.db_session.execute(query)
+        events_orm = res.scalars().one_or_none()
+        return events_orm
+    
+    async def update_photo(self, event_id, photo) -> Optional[UUID]:
+        query = (
+            update(EventsOrm)
+            .where(EventsOrm.event_id==event_id)
+            .values(photo=photo)
+            .returning(EventsOrm.event_id)
+        )
+
+        res = await self.db_session.execute(query)
+        response = res.scalars().one_or_none()
+        return response
+
+
+
+
+
+
+
+
+
+----
+api/actions/events.py
+from db.dals import EventsDAL
+from db.models.models import EventsOrm
+from sqlalchemy.dialects.postgresql import UUID
+from api.schemas import EventAddDTO, EventShowDTO
+from typing import Optional
+import uuid
+import datetime
+from sqlalchemy.inspection import inspect
+import redis.asyncio as redis_async
+import asyncio
+import json
+from fastapi import UploadFile
+from pydantic import TypeAdapter
+from settings import settings
+from services.s3_service import s3_client
+from services.resize_images import optimize_image_task
+import logging
+
+log = logging.getLogger(__name__)
+
+
+redis_client = redis_async.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT,password=settings.REDIS_PASS , decode_responses=True)
+
+async def redis_available():
+    try:
+        return await redis_client.ping()
+    except:
+        return False
+
+def orm_to_dict(obj: EventsOrm):
+    dict1 = {}
+    for c in inspect(obj).mapper.column_attrs:
+        value = getattr(obj, c.key)
+            
+        dict1[c.key] = str(value)
+
+
+    return dict1
+
+
+async def _create_new_event(cred: EventAddDTO, uploaded_file: UploadFile | None, session) -> EventShowDTO:
+    async with session.begin():
+        s3_url_photo = None
+        if uploaded_file is not None:
+
+            # 'https://{self.static_domain}/{unique_filename}'
+            s3_url_photo = await s3_client.upload_file(
+                    filename=uploaded_file.filename,
+                    file=uploaded_file.file, # BinaryIO
+                )   
+        event_dal = EventsDAL(session)
+        created_event_orm = await event_dal.create_event(
+            title=cred.title,
+            text=cred.text,
+            author_id=cred.author_id,
+            photo=s3_url_photo,
+        )
+
+    event_show_dto = EventShowDTO.model_validate(created_event_orm, from_attributes=True)
+
+    task = optimize_image_task.delay(event_id=event_show_dto.event_id, s3_key=s3_url_photo) 
+    print(f'Task name: {task}')
+
+    if await redis_available():
+        keys = await redis_client.keys("events:page:*")
+        if keys:
+            await redis_client.delete(*keys)
+    return event_show_dto
+
+
+
+async def _delete_event(event_id, session) -> Optional[UUID]:
+    event = await _get_event_by_id(event_id=event_id, session=session)
+    filename = event.photo.split('/')[-1]
+
+    async with session.begin():
+        await s3_client.delete_file(s3_key=filename)
+        
+        event_dal = EventsDAL(session)
+        deleted_event_id = await event_dal.delete_event(event_id=event_id)
+    if await redis_available():
+        keys = await redis_client.keys("events:page:*")
+        if keys:
+            await redis_client.delete(*keys)
+    return deleted_event_id
+
+hit = 0
+miss = 0
+
+adapter = TypeAdapter(list[EventShowDTO])
+
+async def _get_events_limit_10_by_page(page: int, session) -> list[EventsOrm]:
+    global hit, miss
+    cache_key = f"events:page:{page}"
+
+    try:
+        if await redis_available():
+
+            cached_data = await redis_client.get(cache_key)
+            
+            if cached_data:
+                hit += 1
+                events_dto = adapter.validate_json(cached_data)
+                return [EventsOrm(**dto.model_dump()) for dto in events_dto]
+                
+    except Exception as e:
+        print(f"Redis error (read): {e}")
+    miss += 1
+    start = 10 * (page - 1)
+    events_dal = EventsDAL(session)
+    events_orm_list = await events_dal.get_events_limit_10(offset=start)
+    
+    if not events_orm_list:
+        return []
+    if await redis_available():
+        asyncio.create_task(cache_page_data(cache_key, events_orm_list))
+
+    return events_orm_list
+
+async def cache_page_data(key: str, events_orm: list[EventsOrm]):
+    try:
+        events_dto = [EventShowDTO.model_validate(e, from_attributes=True) for e in events_orm]
+        
+        json_data = adapter.dump_json(events_dto).decode('utf-8')
+        
+        await redis_client.set(key, json_data, ex=600)
+        
+    except Exception as e:
+        print(f"Redis error (write): {e}")
+
+async def _get_event_by_id(event_id, session) -> EventsOrm:
+    async with session.begin():
+        event_dal = EventsDAL(session)
+        return await event_dal.get_event_by_id(event_id=event_id)   
+
+
+----
+services/resize_images.py
+import io
+import asyncio
+from PIL import Image, ImageOps
+from pillow_heif import register_heif_opener
+from services.celery_app import celery
+from services.s3_service import s3_client 
+from db.database import async_session_factory 
+from db.dals import EventsDAL
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from settings import settings
+import uuid
+from typing import Optional
+from sqlalchemy.dialects.postgresql import UUID
+
+register_heif_opener()
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
+
+async def optimize_image_logic(event_id: uuid.UUID, s3_key: str) -> Optional[UUID]:    
+    # Now we log details for debugging
+    logger.info(f'EVENT_ID: {event_id} | S3_KEY: {s3_key}')
+    
+    filename_old = s3_key.split("/")[-1]
+    logger.info(f'EXTRACTED FILENAME: {filename_old}')
+    
+    file_bytes = await s3_client.get_file(filename_old)
+    
+    # 2. Обработка Pillow (оставляем твою отличную логику)
+    img = Image.open(io.BytesIO(file_bytes))
+    img = ImageOps.exif_transpose(img)
+    
+    if img.mode in ("RGBA", "LA", "P"):
+        img = img.convert("RGBA")
+    else:
+        img = img.convert("RGB")
+
+    img.thumbnail((1920, 1080), Image.Resampling.LANCZOS)
+
+    output = io.BytesIO()
+    img.save(output, format="WEBP", quality=80, method=6)
+    output.seek(0)
+
+    # 3. Генерируем новый путь для оптимизированного файла
+    optimized_key = s3_key.replace(filename_old, f"optimized_{filename_old.split('.')[0]}.webp")
+    filename_new = optimized_key.split("/")[-1]
+
+    # 4. Загружаем обработанный файл обратно в S3 (ensure bytes are passed)
+    url = await s3_client.upload_file(
+        filename=filename_new,
+        file=output.getvalue(),
+    ) 
+
+    await s3_client.delete_file(s3_key=filename_old)  # delete old version of image 
+    
+    # Create a new async engine/sessionmaker inside the worker process to
+    # ensure connections are bound to the current event loop and avoid
+    # 'Future attached to a different loop' issues.
+    engine = create_async_engine(settings.DATABASE_ASYNC_URL)
+    LocalSession = async_sessionmaker(bind=engine, expire_on_commit=False)
+
+    try:
+        async with LocalSession() as session:
+            async with session.begin():
+                event_dal = EventsDAL(session)
+                updated_event_id = await event_dal.update_photo(event_id=event_id, photo=url)
+    finally:
+        # Dispose the engine to close pool connections bound to this loop
+        await engine.dispose()
+
+    return updated_event_id    
+            
+
+
+    
+
+@celery.task(name="optimize_image_task")
+def optimize_image_task(event_id: uuid.UUID, s3_key: str) -> Optional[UUID]:
+    # 'https://{self.static_domain}/{unique_filename}'
+    return asyncio.run(optimize_image_logic(event_id, s3_key))
+----
+requirements.txt
+aiobotocore==3.0.0
+aiohappyeyeballs==2.6.1
+aiohttp==3.13.2
+aioitertools==0.13.0
+aioredis==2.0.1
+aiosignal==1.4.0
+alembic==1.17.0
+amqp==5.3.1
+annotated-types==0.7.0
+anyio==4.11.0
+argon2-cffi==25.1.0
+argon2-cffi-bindings==25.1.0
+async-timeout==5.0.1
+asyncpg==0.30.0
+attrs==25.4.0
+authx==1.4.3
+bcrypt==5.0.0
+beanie==2.0.1
+bidict==0.23.1
+billiard==4.2.4
+botocore==1.42.5
+celery==5.6.0
+certifi==2025.10.5
+cffi==2.0.0
+click==8.3.0
+click-didyoumean==0.3.1
+click-plugins==1.1.1.2
+click-repl==0.3.0
+colorama==0.4.6
+cryptography==46.0.3
+dnspython==2.8.0
+ecdsa==0.19.1
+email-validator==2.3.0
+exceptiongroup==1.3.1
+fastapi==0.119.0
+frozenlist==1.8.0
+greenlet==3.2.4
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.11
+iniconfig==2.3.0
+itsdangerous==2.2.0
+jmespath==1.0.1
+kombu==5.6.1
+lazy-model==0.4.0
+Mako==1.3.10
+MarkupSafe==3.0.3
+multidict==6.7.0
+packaging==25.0
+passlib==1.7.4
+pillow==12.0.0
+pillow_heif==1.1.1
+pluggy==1.6.0
+prometheus-fastapi-instrumentator==7.1.0
+prometheus_client==0.23.1
+prompt_toolkit==3.0.52
+propcache==0.4.1
+psycopg2==2.9.11
+pyasn1==0.6.1
+pycparser==2.23
+pydantic==2.12.1
+pydantic-settings==2.11.0
+pydantic_core==2.41.3
+Pygments==2.19.2
+PyJWT==2.10.1
+pymongo==4.15.5
+pytest==8.4.2
+pytest-asyncio==1.2.0
+python-dateutil==2.9.0.post0
+python-dotenv==1.1.1
+python-engineio==4.12.3
+python-jose==3.5.0
+python-multipart==0.0.20
+python-socketio==5.15.0
+pytz==2025.2
+redis==7.1.0
+rsa==4.9.1
+sentry-sdk==2.48.0
+simple-websocket==1.1.0
+six==1.17.0
+sniffio==1.3.1
+SQLAlchemy==2.0.44
+starlette==0.48.0
+typing-inspection==0.4.2
+typing_extensions==4.15.0
+tzdata==2025.3
+tzlocal==5.3.1
+urllib3==2.6.2
+uvicorn==0.37.0
+vine==5.1.0
+wcwidth==0.2.14
+wrapt==2.0.1
+wsproto==1.3.2
+yarl==1.22.0
+
+----
+api/actions/user.py
+from api.schemas import UserShowDTO
+from db.dals import UserDAL
+from hashing import Hasher
+from db.models.models import PortalRole, UsersOrm
+from typing import Optional
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
+
+async def _create_new_user(cred, session) -> UserShowDTO:
+    async with session.begin():
+        user_dal = UserDAL(session)
+
+        created_user_orm = await user_dal.create_user(
+            name=cred.name,
+            email=cred.email,
+            hashed_password=Hasher.get_password_hash(cred.hashed_password),
+            roles={PortalRole.ROLE_PORTAL_USER,}
+        )
+
+    user_show_dto = UserShowDTO.model_validate(created_user_orm, from_attributes=True)
+    return user_show_dto
+
+
+
+async def _delete_user(user_id, session) -> Optional[UUID]:
+    async with session.begin():
+        user_dal = UserDAL(session)
+
+        deleted_user_id = await user_dal.delete_user(user_id=user_id)
+
+        return deleted_user_id
+    
+
+async def _update_user(user_id, updated_user_params: dict, session) -> Optional[UUID]:
+    async with session.begin():
+        user_dal = UserDAL(session)
+
+        updated_user_id = await user_dal.update_user(user_id=user_id, **updated_user_params)
+        return updated_user_id
+    
+    
+async def _get_user_by_id(user_id, session) -> UsersOrm:
+    async with  session.begin():
+        user_dal = UserDAL(session)
+        return  await user_dal.get_user_by_id(user_id=user_id)
+
+async def _get_user_by_email(email, session) -> UsersOrm:
+    async with  session.begin():
+        user_dal = UserDAL(session)
+        return  await user_dal.get_user_by_email(email=email)
+    
+
+async def check_user_permission(target_user: UsersOrm, current_user: UsersOrm ) ->  bool:
+    if PortalRole.ROLE_PORTAL_SUPERADMIN in target_user.roles:
+        return False
+
+    if target_user.user_id != current_user.user_id:
+        #check admin role
+        if not {
+            PortalRole.ROLE_PORTAL_ADMIN,
+            PortalRole.ROLE_PORTAL_SUPERADMIN
+        }.intersection(set(current_user.roles)):
+            return False
+
+        #check admin deactivate superadmin attempt
+        if (PortalRole.ROLE_PORTAL_ADMIN in current_user.roles 
+            and PortalRole.ROLE_PORTAL_SUPERADMIN in target_user.roles):
+            return False
+        # check admin deactivate admin attempt
+        if (PortalRole.ROLE_PORTAL_ADMIN in current_user.roles 
+            and PortalRole.ROLE_PORTAL_ADMIN in target_user.roles):
+            return False
+    return True
+
+
+async def _get_users(session) -> list[UsersOrm]:
+    async with session.begin():
+        users_dal = UserDAL(session)
+        return await users_dal.get_users()
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----
+db/models/models.py
+from db.database import Base
+from typing import Annotated
+import uuid
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import UUID 
+from sqlalchemy import String, ARRAY, func, ForeignKey
+from enum import  StrEnum
+from datetime import datetime, timezone
+from sqlalchemy import DateTime 
+
+def _utc_now():
+    return datetime.now(timezone.utc)
+
+
+str_256 = Annotated[str, mapped_column(String(256))]
+uidpk = Annotated[uuid.UUID, mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)]
+created_at = Annotated[datetime, mapped_column(
+    DateTime(timezone=True),
+    server_default=func.now()
+)]
+
+updated_at = Annotated[datetime, mapped_column(
+    DateTime(timezone=True),
+    server_default=func.now(), 
+    onupdate=_utc_now
+)]
+class PortalRole(StrEnum):
+    ROLE_PORTAL_USER = "ROLE_PORTAL_USER"
+    ROLE_PORTAL_ADMIN = "ROLE_PORTAL_ADMIN"
+    ROLE_PORTAL_SUPERADMIN = "ROLE_PORTAL_SUPERADMIN"
+
+
+class UsersOrm(Base):
+    __tablename__ = "users"
+
+    user_id: Mapped[uidpk]
+    name: Mapped[str_256]
+    email: Mapped[str_256] = mapped_column(unique=True, index=True)
+    created_at: Mapped[created_at]
+
+    hashed_password: Mapped[str_256] 
+    roles: Mapped[set[str]] = mapped_column(ARRAY(String))
+
+    events: Mapped[list["EventsOrm"]] = relationship("EventsOrm", back_populates="author")
+
+    @property
+    def is_superadmin(self) -> bool:
+        return PortalRole.ROLE_PORTAL_SUPERADMIN in self.roles 
+
+    @property
+    def is_admin(self) -> bool:
+        return PortalRole.ROLE_PORTAL_ADMIN in self.roles 
+    
+    def enrich_admin_roles_by_admin_role(self):
+        if not self.is_admin:
+            return {*self.roles, PortalRole.ROLE_PORTAL_ADMIN}
+    
+    def remove_admin_role_from_model(self):
+        if self.is_admin:
+            return {role for role in self.roles if role != PortalRole.ROLE_PORTAL_ADMIN}
+
+
+class EventsOrm(Base):
+    __tablename__ = "events"
+
+    event_id: Mapped[uidpk]
+    title: Mapped[str_256] 
+    text: Mapped[str]
+    author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.user_id", ondelete="CASCADE"))
+    photo: Mapped[str | None]
+    likes: Mapped[int] = mapped_column(default=0)
+    created_at: Mapped[created_at]
+    updated_at: Mapped[updated_at]
+
+    author:  Mapped["UsersOrm"] = relationship("UsersOrm", back_populates="events")
+
+
+----
+main.py
+from fastapi import FastAPI, APIRouter
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+from api.handlers import user_router, event_router
+from api.login_handlers import login_router
+from api.actions.chat import sio, Message
+from api.chat_handler import chat_router
+from contextlib import asynccontextmanager
+from pymongo import AsyncMongoClient
+from beanie import init_beanie
+from socketio import ASGIApp
+from settings import settings
+import logging
+from prometheus_fastapi_instrumentator import Instrumentator
+import sentry_sdk
+from services.health import health_router
+
+sentry_sdk.init(
+    dsn=settings.SENTRY_URL,
+    # Add data like request headers and IP for users,
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+    send_default_pii=True,
+)
+
+# Logger
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s" 
+)
+
+logger = logging.getLogger(__name__)
+
+# Lifespan
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    client = None
+    print("Initialization MongoDB...")
+    try:
+
+        client = AsyncMongoClient(f"mongodb://{settings.MONGO_ROOT_USER}:{settings.MONGO_ROOT_PASS}@mongodb:27017/{settings.MONGO_DB}?authSource=admin")
+        await init_beanie(database=client[settings.MONGO_DB], document_models=[Message])
+        yield
+    finally:
+        print("Close MongoDB...")
+        if client:
+            await client.close()
+
+# creating fastapi app
+
+def create_fastapi_app():
+    app = FastAPI(title="MNU", lifespan=lifespan)
+
+    instrumentator = Instrumentator().instrument(app).expose(app)
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    main_api_router = APIRouter()
+
+    main_api_router.include_router(user_router, prefix="/user", tags=["user"])
+    main_api_router.include_router(login_router, prefix="/login", tags=["login"])
+    main_api_router.include_router(event_router, prefix="/event", tags=["event"])
+    main_api_router.include_router(chat_router, prefix="/chat", tags=["chat"])
+    main_api_router.include_router(health_router, prefix="/ping", tags=["ping"])
+
+    app.include_router(main_api_router)
+
+    return app
+
+
+app_fastapi = create_fastapi_app()
+
+asgi_app = ASGIApp(sio, other_asgi_app=app_fastapi)
+
+if __name__ == '__main__':
+    uvicorn.run(
+        app="main:asgi_app",
+        host="0.0.0.0",
+        port=8080,
+        )
+----
+api/actions/auth.py
+from authx import AuthX, AuthXConfig, RequestToken
+from settings import settings
+from datetime import timedelta
+from sqlalchemy.ext.asyncio import AsyncSession
+from db.dals import UserDAL
+from api.schemas import UserShowDTO
+from sqlalchemy.dialects.postgresql import UUID
+from typing import Optional
+from hashing import Hasher
+from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status
+from db.database import get_db
+from jose import JWTError
+from db.models.models import UsersOrm
+
+
+config = AuthXConfig(
+    JWT_SECRET_KEY=settings.SECRET_KEY,
+    JWT_ACCESS_COOKIE_NAME="my_access_token",
+    JWT_TOKEN_LOCATION=["cookies"],
+    JWT_ACCESS_TOKEN_EXPIRES=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+)
+
+security = AuthX(config=config)
+
+async def _get_user_by_email_for_auth(email: str, session: AsyncSession) -> UsersOrm:
+    async with session.begin():
+        user_dal = UserDAL(db_session=session)
+        return await user_dal.get_user_by_email(email=email)
+    
+async def _get_user_by_id_for_auth(user_id: UUID, session: AsyncSession) -> UsersOrm:
+    async with session.begin():
+        user_dal = UserDAL(db_session=session)
+        return await user_dal.get_user_by_id(user_id=user_id)
+
+async def authenticate_user(email: str, password: str, session: AsyncSession) -> Optional[UserShowDTO]:
+    user = await _get_user_by_email_for_auth(email=email, session=session)
+    if user is None:
+         return None
+         
+    if not Hasher.verify_password(plain_password=password, hashed_password=user.hashed_password):
+        return None
+    return user       
+    
+
+# Use for Dependancy
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/token")
+
+async def get_current_user_from_token(
+        token: str = Depends(oauth2_scheme),
+        db: AsyncSession = Depends(get_db)
+) -> UsersOrm:
+        cred_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
+
+        try:
+             request_token = RequestToken(token=token, type="access", location="headers")
+             payload = security.verify_token(request_token)
+             user_id: str = payload.sub
+             print("Username extracted is:", user_id)
+             
+             if user_id is None:
+                  raise cred_exception
+        except JWTError:
+             raise cred_exception
+        user = await _get_user_by_id_for_auth(user_id, session=db)
+        if user is None:
+             raise cred_exception
+        return user      
+
+
+
+
+
+
+
+
+
+----
+api/schemas.py
+from pydantic import BaseModel, EmailStr, field_validator, Field
+import uuid
+from datetime import datetime
+from db.models.models import PortalRole
+from typing import Annotated
+import re
+from fastapi import UploadFile, Form
+
+
+NAME_REGEX = re.compile(r"^[а-яА-ЯёЁәәғғққңңөөұұүүһһііІІa-zA-Z0-9]+$", re.IGNORECASE)
+
+class UserAddDTO(BaseModel):
+    name: Annotated[str, Field(..., min_length=5)]
+    email: EmailStr
+    hashed_password: str
+
+    @field_validator("name")
+    def validate_name(cls, value: str):
+        if not NAME_REGEX.fullmatch(value.strip()):
+            raise ValueError(
+                "Name should contains only rus, eng, kaz letters and digits"
+            )
+        return value
+
+class UserShowDTO(UserAddDTO):
+    user_id: uuid.UUID   
+    created_at: datetime
+    roles: list[PortalRole]
+
+class DeleteUserResponse(BaseModel):
+    deleted_user_id: uuid.UUID  
+
+class UpdatedUserResponse(BaseModel):
+    updated_user_id: uuid.UUID
+
+class UpdateUserRequest(BaseModel):
+    name: Annotated[str | None, Field(min_length=5)] = None
+    email: EmailStr | None = None
+    
+    @field_validator("name")
+    def validate_name(cls, value: str):
+        if not NAME_REGEX.fullmatch(value.strip()):
+            raise ValueError(
+                "Name should contains only rus, eng, kaz letters and digits"
+            )
+        return value
+
+
+####################
+# LOGIN
+####################
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+###################
+# Events
+###################
+
+class EventAddDTO(BaseModel):
+     title: str
+     text: str
+     author_id: uuid.UUID 
+    
+     @classmethod
+     def as_form(
+         cls,
+         title: str = Form(...),
+         text: str = Form(...),
+         author_id: uuid.UUID = Form(...)
+     ):
+         return cls(
+             title=title,
+             text=text,
+             author_id=author_id,        
+            )
+
+class EventShowDTO(EventAddDTO):
+    event_id: uuid.UUID
+    photo: str | None
+    likes: int 
+    created_at: datetime
+    updated_at: datetime
+
+class DeleteEventResponse(BaseModel):
+    deleted_event_id: uuid.UUID     
+
+
+
+
+
+
+
+
+
+----
+services/s3_service.py
+import mimetypes
+from aiobotocore.session import get_session
+from contextlib import asynccontextmanager
+from botocore.config import Config
+import certifi
+from fastapi import UploadFile
+import datetime
+from settings import settings
+
+class S3Client:
+    def __init__(
+            self,
+            access_key: str,
+            secret_key: str,
+            endpoint_url: str,
+            bucket_name: str,
+            static_domain: str,
+    ):
+        self.config = {
+            "aws_access_key_id": access_key,
+            "aws_secret_access_key": secret_key,
+            "endpoint_url": endpoint_url
+        }
+        self.bucket_name = bucket_name
+        self.static_domain = static_domain
+        self.session = get_session()
+
+        self.s3_config = Config(
+            signature_version="s3v4",
+            s3={'addressing_style': "path"}
+        )
+
+    @asynccontextmanager
+    async def get_client(self):
+        async with self.session.create_client("s3", config=self.s3_config, verify=certifi.where(), **self.config) as client:
+            yield client   
+
+    async def get_file(self, s3_key: str) -> bytes:
+        async with self.get_client() as client:
+            response = await client.get_object(
+                 Bucket=self.bucket_name,
+                 Key=s3_key,
+            )
+            async with response["Body"] as stream:
+                 return await stream.read()    
+
+    async def upload_file(
+            self,
+            filename: str,
+            file: bytes,
+    ) -> str:
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        extension = filename.split(".")[-1]
+        name = filename.split(".")[0]
+        unique_filename = f"{name}-{timestamp}.{extension}"
+
+        content_type, _ = mimetypes.guess_type(filename)
+        
+        async with self.get_client() as client:
+                await client.put_object(
+                    Bucket=self.bucket_name,
+                    Key=unique_filename,
+                    Body=file,
+                    ContentType=content_type,
+                    ACL="public-read"
+                )
+        return f'https://{self.static_domain}/{unique_filename}' 
+
+    async def delete_file(self, s3_key: str):
+         async with self.get_client() as client:
+             await client.delete_object(
+                  Bucket=self.bucket_name,
+                  Key=s3_key,
+             )  
+s3_client = S3Client(
+    access_key=settings.ACCESS_KEY,
+    secret_key=settings.SECRET_KEY,
+    endpoint_url=settings.ENDPOINT_URL,
+    bucket_name=settings.BUCKET_NAME,
+    static_domain=settings.STATIC_DOMAIN,
+)
+
+
+----
+migrations/versions/8fa88b8bd508_first_migrations.py
+"""first migrations
+
+Revision ID: 8fa88b8bd508
+Revises: 
+Create Date: 2025-11-24 21:34:54.348418
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+
+
+# revision identifiers, used by Alembic.
+revision: str = '8fa88b8bd508'
+down_revision: Union[str, Sequence[str], None] = None
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    """Upgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.create_table('users',
+    sa.Column('user_id', sa.UUID(), nullable=False),
+    sa.Column('name', sa.String(length=256), nullable=False),
+    sa.Column('email', sa.String(length=256), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('hashed_password', sa.String(length=256), nullable=False),
+    sa.Column('roles', sa.ARRAY(sa.String()), nullable=False),
+    sa.PrimaryKeyConstraint('user_id')
+    )
+    op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
+    op.create_table('events',
+    sa.Column('event_id', sa.UUID(), nullable=False),
+    sa.Column('title', sa.String(length=256), nullable=False),
+    sa.Column('text', sa.String(), nullable=False),
+    sa.Column('author_id', sa.UUID(), nullable=False),
+    sa.Column('photo', sa.String(), nullable=False),
+    sa.Column('likes', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['author_id'], ['users.user_id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('event_id')
+    )
+    # ### end Alembic commands ###
+
+
+def downgrade() -> None:
+    """Downgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table('events')
+    op.drop_index(op.f('ix_users_email'), table_name='users')
+    op.drop_table('users')
+    # ### end Alembic commands ###
+
+----
+migrations/env.py
+from logging.config import fileConfig
+
+from sqlalchemy import engine_from_config
+from sqlalchemy import pool
+
+from alembic import context
+
+from db.models.models import UsersOrm, EventsOrm
+from db.database import Base
+from settings import settings
+
+# this is the Alembic Config object, which provides
+# access to the values within the .ini file in use.
+config = context.config
+
+# Interpret the config file for Python logging.
+# This line sets up loggers basically.
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
+config.set_main_option("sqlalchemy.url", settings.DATABASE_ASYNC_URL + "?async_fallback=True")    
+
+# add your model's MetaData object here
+# for 'autogenerate' support
+# from myapp import mymodel
+# target_metadata = mymodel.Base.metadata
+target_metadata = Base.metadata
+
+# other values from the config, defined by the needs of env.py,
+# can be acquired:
+# my_important_option = config.get_main_option("my_important_option")
+# ... etc.
+
+
+def run_migrations_offline() -> None:
+    """Run migrations in 'offline' mode.
+
+    This configures the context with just a URL
+    and not an Engine, though an Engine is acceptable
+    here as well.  By skipping the Engine creation
+    we don't even need a DBAPI to be available.
+
+    Calls to context.execute() here emit the given string to the
+    script output.
+
+    """
+    url = config.get_main_option("sqlalchemy.url")
+    context.configure(
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+def run_migrations_online() -> None:
+    """Run migrations in 'online' mode.
+
+    In this scenario we need to create an Engine
+    and associate a connection with the context.
+
+    """
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+
+    with connectable.connect() as connection:
+        context.configure(
+            connection=connection, target_metadata=target_metadata
+        )
+
+        with context.begin_transaction():
+            context.run_migrations()
+
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
+
+----
+migrations/versions/fffa41dfdafe_timezone.py
+"""timezone
+
+Revision ID: fffa41dfdafe
+Revises: dd254a8bd816
+Create Date: 2025-12-21 02:16:08.803212
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
+
+# revision identifiers, used by Alembic.
+revision: str = 'fffa41dfdafe'
+down_revision: Union[str, Sequence[str], None] = 'dd254a8bd816'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    """Upgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.alter_column('events', 'created_at',
+               existing_type=postgresql.TIMESTAMP(),
+               type_=sa.DateTime(timezone=True),
+               existing_nullable=False,
+               existing_server_default=sa.text('now()'))
+    op.alter_column('events', 'updated_at',
+               existing_type=postgresql.TIMESTAMP(),
+               type_=sa.DateTime(timezone=True),
+               existing_nullable=False,
+               existing_server_default=sa.text('now()'))
+    op.alter_column('users', 'created_at',
+               existing_type=postgresql.TIMESTAMP(),
+               type_=sa.DateTime(timezone=True),
+               existing_nullable=False,
+               existing_server_default=sa.text('now()'))
+    # ### end Alembic commands ###
+
+
+def downgrade() -> None:
+    """Downgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.alter_column('users', 'created_at',
+               existing_type=sa.DateTime(timezone=True),
+               type_=postgresql.TIMESTAMP(),
+               existing_nullable=False,
+               existing_server_default=sa.text('now()'))
+    op.alter_column('events', 'updated_at',
+               existing_type=sa.DateTime(timezone=True),
+               type_=postgresql.TIMESTAMP(),
+               existing_nullable=False,
+               existing_server_default=sa.text('now()'))
+    op.alter_column('events', 'created_at',
+               existing_type=sa.DateTime(timezone=True),
+               type_=postgresql.TIMESTAMP(),
+               existing_nullable=False,
+               existing_server_default=sa.text('now()'))
+    # ### end Alembic commands ###
+
+----
+api/login_handlers.py
+from fastapi import APIRouter, Response, Depends, HTTPException, status
+from api.schemas import Token
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
+from sqlalchemy.ext.asyncio import AsyncSession
+from db.database import get_db
+from api.actions.auth import authenticate_user, config, security, get_current_user_from_token
+from db.models.models import UsersOrm
+from authx.exceptions import JWTDecodeError
+
+
+login_router = APIRouter()
+
+@login_router.post("/token", response_model=Token)
+async def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)) -> Token:
+    user = await authenticate_user(email=form_data.username, password=form_data.password, session=db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="incorrect username or pass")
+    
+    access_token = security.create_access_token(uid=str(user.user_id))
+    response.set_cookie(config.JWT_ACCESS_COOKIE_NAME, access_token)
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@login_router.get("/test_auth")
+async def test(current_user: UsersOrm = Depends(get_current_user_from_token)):
+    try:
+        return {"success": True, "current_user": current_user}
+    except JWTDecodeError as err:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired or invalid")     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----
+settings.py
+from pydantic_settings import BaseSettings, SettingsConfigDict
+import asyncpg
+
+
+class Settings(BaseSettings):
+    # postgres
+    DB_USER: str
+    DB_PASS: str
+    DB_HOST: str
+    DB_PORT: str
+    DB_DB: str
+
+    # mongodb
+    MONGO_ROOT_USER: str
+    MONGO_ROOT_PASS: str
+    MONGO_APP_USER: str
+    MONGO_APP_PASS: str
+    MONGO_DB: str
+
+    # redis
+    REDIS_HOST: str
+    REDIS_PORT: str
+    REDIS_PASS: str
+    
+    # jwt 
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+
+    APP_PORT: int
+
+    # s3 service
+    ACCESS_KEY: str
+    SECRET_KEY: str
+    ENDPOINT_URL: str
+    BUCKET_NAME: str
+    STATIC_DOMAIN: str
+
+    # Celery 
+    CELERY_BROKER_URL: str
+    CELERY_RESULT_BACKEND: str
+
+    # Sentry
+    SENTRY_URL: str
+
+    
+    @property
+    def DATABASE_ASYNC_URL(self):
+        return f'postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_DB}'
+    
+    model_config = SettingsConfigDict(env_file=".env")
+
+settings = Settings()
+----
+api/actions/chat.py
+import socketio
+from db.models.models_mongodb import Message
+
+sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins="*")
+
+
+@sio.event
+async def connect(sid, environ):
+    print(f'Client {sid} connected to common room')
+
+    await sio.enter_room(sid, "common_room")
+
+@sio.event
+async def disconnect(sid):
+    print(f'Client {sid} disconnected from common room')
+
+    await sio.leave_room(sid, 'common_room')
+
+@sio.event
+async def message(sid, data: dict):
+    print(f'Message was recieved from {sid}: {data}')
+    text = data.get("text", "").strip()
+    sender_id = data.get("sender_id")
+    sender_name = data.get("sender_name", "Anonist") 
+
+    if not text or not sender_id:
+        return
+
+    msg = await Message(
+        sender_id=sender_id,
+        sender_name=sender_name,
+        text=text
+    ).insert()
+
+    await sio.emit(
+        "new_message", {
+         "id": str(msg.id),
+         "sender_id": sender_id,
+         "sender_name": sender_name,
+         "text": text,
+         "created_at": msg.created_at.isoformat()  
+         },
+         room="common_room",
+         skip_sid=sid 
+    )
+
+
+
+
+----
+loki-config.yaml
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+  chunk_idle_period: 5m
+  chunk_retain_period: 30s
+  max_chunk_age: 1h
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 24h
+
+storage_config:
+  boltdb_shipper:
+    active_index_directory: /loki/index
+    cache_location: /loki/boltdb-cache
+  filesystem:
+    directory: /loki/chunks
+
+limits_config:
+  retention_period: 168h  # 7 дней
+  allow_structured_metadata: false
+
+table_manager:
+  retention_deletes_enabled: true
+  retention_period: 168h  # 7 дней
+
+query_scheduler:
+  max_outstanding_requests_per_tenant: 2048
+
+common:
+  path_prefix: /tmp/loki
+----
+migrations/versions/dd254a8bd816_added_photo_to_likes.py
+"""added photo to likes
+
+Revision ID: dd254a8bd816
+Revises: 8fa88b8bd508
+Create Date: 2025-12-02 18:01:04.646617
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+
+
+# revision identifiers, used by Alembic.
+revision: str = 'dd254a8bd816'
+down_revision: Union[str, Sequence[str], None] = '8fa88b8bd508'
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    """Upgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.alter_column('events', 'photo',
+               existing_type=sa.VARCHAR(),
+               nullable=True)
+    # ### end Alembic commands ###
+
+
+def downgrade() -> None:
+    """Downgrade schema."""
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.alter_column('events', 'photo',
+               existing_type=sa.VARCHAR(),
+               nullable=False)
+    # ### end Alembic commands ###
+
+----
+promtail-config.yaml
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+- job_name: docker-logs
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: docker-logs
+      __path__: /var/lib/docker/containers/*/*log
+
+  pipeline_stages:
+
+  - json:
+      expressions:
+        stream: stream
+        attrs: attrs
+        tag: attrs.tag
+  - regex:
+      expression: (?P<image_name>(?:[^|]*[^|])).(?P<container_name>(?:[^|]*[^|])).(?P<image_id>(?:[^|]*[^|])).(?P<container_id>(?:[^|]*[^|]))
+      source: "tag"
+  - labels:
+      tag:
+      image_name:
+      container_name:
+
+
+
+
+
+----
+migrations/script.py.mako
+"""${message}
+
+Revision ID: ${up_revision}
+Revises: ${down_revision | comma,n}
+Create Date: ${create_date}
+
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+${imports if imports else ""}
+
+# revision identifiers, used by Alembic.
+revision: str = ${repr(up_revision)}
+down_revision: Union[str, Sequence[str], None] = ${repr(down_revision)}
+branch_labels: Union[str, Sequence[str], None] = ${repr(branch_labels)}
+depends_on: Union[str, Sequence[str], None] = ${repr(depends_on)}
+
+
+def upgrade() -> None:
+    """Upgrade schema."""
+    ${upgrades if upgrades else "pass"}
+
+
+def downgrade() -> None:
+    """Downgrade schema."""
+    ${downgrades if downgrades else "pass"}
+
+----
+Dockerfile
+ARG BASE_IMAGE=python:3.13-slim-bookworm
+
+FROM $BASE_IMAGE
+
+# system update and package install
+RUN apt-get -y update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    gcc \
+    openssl libssl-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY requirements.txt .
+
+# pip & poetry
+RUN python3 -m pip install --user --upgrade pip && \
+    python3 -m pip install -r requirements.txt
+
+COPY . .
+
+# Configuration
+EXPOSE 8080
+
+CMD ["python", "main.py"]
+
+----
+api/chat_handler.py
+from api.actions.chat import sio, Message
+from fastapi import APIRouter
+
+
+
+
+chat_router = APIRouter()
+
+
+@chat_router.get("/history")
+async def get_history(limit: int = 50):
+    messages = await Message.find_all().sort(-Message.created_at).limit(limit).to_list()
+    messages.reverse()
+    
+    return [
+        {
+            "id": str(m.id),
+            "sender_id": str(m.sender_id),
+            "sender_name": m.sender_name,
+            "text": m.text,
+            "created_at": m.created_at.isoformat()
+        }
+        for m in messages
+    ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----
+db/database.py
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from settings import settings
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import String
+from typing import Annotated
+
+engine = create_async_engine(settings.DATABASE_ASYNC_URL)
+
+async_session_factory = async_sessionmaker(bind=engine, expire_on_commit=False)
+
+
+async def get_db():
+    """ Dependency for getting async session """
+    try:
+        session: AsyncSession = async_session_factory()
+        yield session
+    finally:
+        await session.close()    
+
+class Base(DeclarativeBase):
+    pass
+
+----
+hashing.py
+from argon2 import PasswordHasher
+
+ph = PasswordHasher(
+    time_cost=3,     
+    memory_cost=102400,  
+    parallelism=2,    
+    hash_len=32,      
+    salt_len=16
+)
+
+class Hasher:
+
+
+    @staticmethod
+    def verify_password(hashed_password: str, plain_password: str) -> bool:
+        return ph.verify(hashed_password, plain_password)
+
+    @staticmethod
+    def get_password_hash(password: str) -> str:
+        return ph.hash(password)
+
+
+----
+db/models/models_mongodb.py
+from beanie import Document
+from pydantic import Field
+from datetime import datetime, timezone
+import uuid
+
+class Message(Document):
+    sender_id: uuid.UUID
+    sender_name: str
+    text: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    
+    class Settings:
+        name = "messages"
+        indexes = [
+            [("created_at", 1)],
+            [("sender_id", 1)],
+        ]
+----
+grafana/datasources.yaml
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: true
+
+----
+services/celery_app.py
+from celery import Celery
+from settings import settings
+
+
+celery = Celery(
+    "services.celery_app",
+    broker=settings.CELERY_BROKER_URL,
+    backend=settings.CELERY_RESULT_BACKEND,
+    include=["services.resize_images"],
+    brocker_connection_retry_on_startup=True,
+)
+----
+prometheus.yml
+global:
+  scrape_interval: 3s
+
+scrape_configs:
+  - job_name: "fastapi"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["backend:8080"]
+----
+frontend/Dockerfile
+FROM nginx:stable-alpine
+
+WORKDIR /usr/share/nginx/html
+
+COPY . .
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
+
+
+
+
+
+----
+.dockerignore
+venv/
+.venv/
+env/
+
+
+
+__pycache__/
+
+.vscode/
+----
+migrations/README
+Generic single-database configuration.
+--END--

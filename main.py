@@ -12,7 +12,15 @@ from socketio import ASGIApp
 from settings import settings
 import logging
 from prometheus_fastapi_instrumentator import Instrumentator
+import sentry_sdk
+from services.health import health_router
 
+sentry_sdk.init(
+    dsn=settings.SENTRY_URL,
+    # Add data like request headers and IP for users,
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+    send_default_pii=True,
+)
 
 # Logger
 
@@ -44,7 +52,7 @@ async def lifespan(app: FastAPI):
 def create_fastapi_app():
     app = FastAPI(title="MNU", lifespan=lifespan)
 
-    instrumentator = Instrumentator.instrument(app).expose(app)
+    instrumentator = Instrumentator().instrument(app).expose(app)
 
     app.add_middleware(
         CORSMiddleware,
@@ -60,6 +68,7 @@ def create_fastapi_app():
     main_api_router.include_router(login_router, prefix="/login", tags=["login"])
     main_api_router.include_router(event_router, prefix="/event", tags=["event"])
     main_api_router.include_router(chat_router, prefix="/chat", tags=["chat"])
+    main_api_router.include_router(health_router, prefix="/ping", tags=["ping"])
 
     app.include_router(main_api_router)
 

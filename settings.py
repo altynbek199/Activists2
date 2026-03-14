@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str
     CELERY_RESULT_BACKEND: str
 
+    # Sentry
+    SENTRY_URL: str
+
     
     @property
     def DATABASE_ASYNC_URL(self):
